@@ -246,7 +246,7 @@
                         <i class="fa-solid fa-ticket"></i>
                     </div>
                     <h3 class="text-xl font-black uppercase text-white">No Active Reservations</h3>
-                    <p class="text-zinc-400 text-sm max-w-md mx-auto">You haven't booked any bikes yet. 1 KES per minute makes riding affordable!</p>
+                    <p class="text-zinc-400 text-sm max-w-md mx-auto">There are no rentals to display. Ask Outriderz staff to start a hire when you collect a bike.</p>
                     <button onclick="switchView('catalog')" class="px-8 py-3.5 bg-outriderz-yellow hover:bg-outriderz-yellowDark text-black font-black uppercase text-xs rounded-2xl shadow-lg transition-all">Explore Standard Fleet</button>
                 </div>
             </div>
@@ -372,7 +372,7 @@
                     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-zinc-800">
                         <div>
                             <h3 class="text-xl font-black uppercase text-white tracking-wider">Fleet Management (Standard Bikes)</h3>
-                            <p class="text-xs text-zinc-400">Monitor bicycle stock or add new standard models.</p>
+                            <p class="text-xs text-zinc-400">Only start a bike timer when staff hand the bike to a customer.</p>
                         </div>
                         <button onclick="openAddBikeModal()" class="px-5 py-3 bg-outriderz-yellow hover:bg-outriderz-yellowDark text-black rounded-2xl text-xs font-black uppercase tracking-wider shadow-lg shadow-yellow-500/20 transition-all flex items-center">
                             <i class="fa-solid fa-plus mr-2"></i> Add Standard Bike
@@ -401,8 +401,8 @@
                 <!-- Recent Bookings Management (1 col) -->
                 <div class="bg-outriderz-zinc900 rounded-3xl p-6 sm:p-8 shadow-xl border border-zinc-800 space-y-6">
                     <div class="pb-6 border-b border-zinc-800">
-                        <h3 class="text-xl font-black uppercase text-white tracking-wider">Recent Rentals</h3>
-                        <p class="text-xs text-zinc-400">Live booking logs in KES.</p>
+                        <h3 class="text-xl font-black uppercase text-white tracking-wider">Manage Rentals</h3>
+                        <p class="text-xs text-zinc-400">Admin controls for starting, returning, and cancelling hires.</p>
                     </div>
                     <div id="admin-bookings-list" class="space-y-4 max-h-[520px] overflow-y-auto pr-1">
                         <!-- Dynamic incoming booking cards -->
@@ -451,7 +451,7 @@
 
                 <div class="pt-2">
                     <button type="submit" class="w-full py-4 bg-outriderz-yellow hover:bg-outriderz-yellowDark text-black font-black uppercase text-sm tracking-wider rounded-2xl shadow-xl shadow-yellow-500/20 transition-all flex items-center justify-center">
-                        <i class="fa-solid fa-play mr-2"></i> Start Hire & Timer
+                        <i class="fa-solid fa-play mr-2"></i> Admin: Start Hire & Timer
                     </button>
                 </div>
             </form>
@@ -825,9 +825,9 @@
                         </div>
                         <div>
                             ${bike.status === 'available' ? `
-                                <button onclick="openBookingModal('${bike.id}')" class="w-full py-3.5 bg-outriderz-yellow hover:bg-outriderz-yellowDark text-black font-black uppercase tracking-wider rounded-2xl text-xs shadow-lg shadow-yellow-500/10 transition-all flex items-center justify-center">
-                                    <i class="fa-solid fa-coins mr-2"></i> Hire at 1 KES / Min
-                                </button>
+                                <p class="w-full py-3.5 bg-zinc-900 text-zinc-400 font-bold uppercase tracking-wider rounded-2xl text-xs text-center border border-zinc-800">
+                                    Available · Hire with staff
+                                </p>
                             ` : `
                                 <button disabled class="w-full py-3.5 bg-zinc-900 text-zinc-600 font-bold uppercase tracking-wider rounded-2xl text-xs cursor-not-allowed">
                                     ${bike.status === 'rented' ? 'Currently Rented' : 'Under Maintenance'}
@@ -956,16 +956,9 @@
                             <span class="text-2xl font-black text-outriderz-yellow"><span data-rental-cost="${booking.id}">${amountDue}</span> KES</span>
                         </div>
                         <div class="flex items-center space-x-3">
-                            ${booking.status === 'active' ? `
-                                <button onclick="completeBooking('${booking.id}')" class="px-5 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-md">
-                                    <i class="fa-solid fa-check mr-1.5"></i> Return Bike
-                                </button>
-                                <button onclick="cancelBooking('${booking.id}')" class="px-4 py-3 bg-zinc-900 hover:bg-zinc-800 text-outriderz-red rounded-2xl text-xs font-black uppercase tracking-wider transition-all border border-zinc-800">
-                                    Cancel
-                                </button>
-                            ` : `
-                                <span class="text-xs font-black uppercase tracking-wider text-zinc-600">Archived</span>
-                            `}
+                            ${booking.status === 'active'
+                                ? '<span class="text-xs font-black uppercase tracking-wider text-zinc-500">Managed by Outriderz staff</span>'
+                                : '<span class="text-xs font-black uppercase tracking-wider text-zinc-600">Archived</span>'}
                         </div>
                     </div>
                 `;
@@ -1030,6 +1023,7 @@
         function cancelBooking(bookingId) {
             const booking = bookings.find(b => b.id === bookingId);
             if (!booking || booking.status !== 'active') return;
+            if (!window.confirm(`Cancel the active hire for ${booking.bikeName}? This stops the timer and records no charge.`)) return;
 
             booking.returnedAt = new Date().toISOString();
             booking.elapsedMinutes = 0;
@@ -1191,9 +1185,18 @@
                     <td class="py-4 px-4 text-xs font-black text-outriderz-yellow">1 KES / Min</td>
                     <td class="py-4 px-4">${statusBadge}</td>
                     <td class="py-4 px-4 text-right space-x-2">
-                        <button onclick="toggleBikeStatusAdmin('${bike.id}')" title="Toggle Maintenance" class="p-2.5 bg-zinc-900 hover:bg-zinc-800 text-outriderz-yellow rounded-xl transition-all border border-zinc-800">
-                            <i class="fa-solid fa-wrench text-xs"></i>
-                        </button>
+                        ${bike.status === 'available' ? `
+                            <button onclick="openBookingModal('${bike.id}')" class="px-3 py-2 bg-outriderz-yellow hover:bg-outriderz-yellowDark text-black rounded-xl text-[10px] font-black uppercase tracking-wider transition-all">
+                                <i class="fa-solid fa-play mr-1"></i> Start Hire
+                            </button>
+                            <button onclick="toggleBikeStatusAdmin('${bike.id}')" title="Mark for maintenance" class="p-2.5 bg-zinc-900 hover:bg-zinc-800 text-outriderz-yellow rounded-xl transition-all border border-zinc-800">
+                                <i class="fa-solid fa-wrench text-xs"></i>
+                            </button>
+                        ` : bike.status === 'maintenance' ? `
+                            <button onclick="toggleBikeStatusAdmin('${bike.id}')" title="Mark as available" class="p-2.5 bg-zinc-900 hover:bg-zinc-800 text-outriderz-yellow rounded-xl transition-all border border-zinc-800">
+                                <i class="fa-solid fa-wrench text-xs"></i>
+                            </button>
+                        ` : '<span class="text-[10px] font-black uppercase text-outriderz-red">Hire in progress</span>'}
                         <button onclick="deleteBike('${bike.id}')" title="Delete Bike" class="p-2.5 bg-zinc-900 hover:bg-zinc-800 text-outriderz-red rounded-xl transition-all border border-zinc-800">
                             <i class="fa-solid fa-trash text-xs"></i>
                         </button>
@@ -1204,7 +1207,7 @@
 
             const bookingsList = document.getElementById('admin-bookings-list');
             bookingsList.innerHTML = '';
-            bookings.slice(0, 5).forEach(booking => {
+            bookings.forEach(booking => {
                 const startedAt = new Date(booking.startedAt || booking.createdAt);
                 const endedAt = booking.returnedAt ? new Date(booking.returnedAt) : new Date();
                 const elapsedMilliseconds = Math.max(0, endedAt.getTime() - startedAt.getTime());
@@ -1225,6 +1228,16 @@
                         <span>${booking.status === 'active' ? 'Elapsed:' : 'Ride time:'} <span data-admin-rental-elapsed="${booking.id}">${formatElapsedTime(elapsedMilliseconds)}</span></span>
                         <span class="font-black uppercase ${booking.status === 'active' ? 'text-emerald-400' : 'text-zinc-500'}">${booking.status}</span>
                     </div>
+                    ${booking.status === 'active' ? `
+                        <div class="flex gap-2 pt-2">
+                            <button onclick="completeBooking('${booking.id}')" class="flex-1 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all">
+                                <i class="fa-solid fa-check mr-1"></i> Admin: Return Bike
+                            </button>
+                            <button onclick="cancelBooking('${booking.id}')" class="px-3 py-2 bg-zinc-900 hover:bg-zinc-800 text-outriderz-red rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border border-zinc-800">
+                                Cancel
+                            </button>
+                        </div>
+                    ` : ''}
                 `;
                 bookingsList.appendChild(item);
             });
@@ -1233,6 +1246,10 @@
         function toggleBikeStatusAdmin(bikeId) {
             const bike = bikes.find(b => b.id === bikeId);
             if (!bike) return;
+            if (bike.status === 'rented') {
+                showToast('Return the active hire before changing this bicycle status.', 'error');
+                return;
+            }
             bike.status = bike.status === 'maintenance' ? 'available' : 'maintenance';
             saveState();
             renderAdmin();
@@ -1241,6 +1258,10 @@
         }
 
         function deleteBike(bikeId) {
+            if (bookings.some(booking => booking.bikeId === bikeId && booking.status === 'active')) {
+                showToast('Return or cancel the active hire before removing this bicycle.', 'error');
+                return;
+            }
             bikes = bikes.filter(b => b.id !== bikeId);
             saveState();
             renderAdmin();
