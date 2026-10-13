@@ -226,7 +226,7 @@
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-zinc-800 gap-4">
                     <div>
                         <h2 class="text-2xl font-black uppercase text-white tracking-wider">My Outriderz Bookings</h2>
-                        <p class="text-xs text-zinc-400">View active bike rentals billed at 1 KES per minute.</p>
+                        <p class="text-xs text-zinc-400">The timer starts when a bike is hired. Rental charges are 1 KES per completed minute.</p>
                     </div>
                     <div class="flex items-center space-x-2">
                         <button onclick="filterRentalsTab('all')" id="tab-all-rentals" class="px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider bg-outriderz-yellow text-black transition-all shadow-md">All Bookings</button>
@@ -422,8 +422,8 @@
                         <i class="fa-solid fa-coins text-xl"></i>
                     </div>
                     <div>
-                        <h3 id="modal-bike-title" class="text-xl font-black uppercase text-white tracking-wider">Book Bicycle</h3>
-                        <p class="text-xs text-outriderz-yellow font-bold">Billing Rate: 1 KES per minute</p>
+                        <h3 id="modal-bike-title" class="text-xl font-black uppercase text-white tracking-wider">Hire Bicycle</h3>
+                        <p class="text-xs text-outriderz-yellow font-bold">Timer starts on confirmation · 1 KES per completed minute</p>
                     </div>
                 </div>
                 <button onclick="closeBookingModal()" class="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-700 transition-all">
@@ -444,36 +444,14 @@
                     </select>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-black text-outriderz-yellow uppercase tracking-wider mb-2">Duration Type</label>
-                        <select id="duration-unit" onchange="calculateBookingTotal()" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-outriderz-yellow">
-                            <option value="minutes">Minutes (1 KES/min)</option>
-                            <option value="hours">Hours (60 KES/hr)</option>
-                            <option value="days">Days (1,440 KES/day)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label id="duration-num-label" class="block text-xs font-black text-outriderz-yellow uppercase tracking-wider mb-2">Number of Units</label>
-                        <input type="number" id="rental-duration-val" value="60" min="1" max="10000" onchange="calculateBookingTotal()" oninput="calculateBookingTotal()" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-outriderz-yellow">
-                    </div>
-                </div>
-
-                <!-- Price Summary Box -->
                 <div class="bg-zinc-950 rounded-2xl p-4 border border-zinc-800 space-y-2">
-                    <div class="flex justify-between text-xs text-zinc-400 font-semibold">
-                        <span id="summary-rate-desc">60 mins @ 1 KES / min</span>
-                        <span id="summary-base-price" class="text-white">60 KES</span>
-                    </div>
-                    <div class="border-t border-zinc-800 pt-2.5 flex justify-between items-center">
-                        <span class="text-sm font-black uppercase text-outriderz-yellow">Total Cost (KES)</span>
-                        <span id="summary-total-price" class="text-2xl font-black text-outriderz-yellow">60 KES</span>
-                    </div>
+                    <p class="text-sm font-black uppercase text-outriderz-yellow">1 KES per completed minute</p>
+                    <p class="text-xs text-zinc-400">The live timer and amount due will appear in My Bookings. Partial minutes are not charged.</p>
                 </div>
 
                 <div class="pt-2">
                     <button type="submit" class="w-full py-4 bg-outriderz-yellow hover:bg-outriderz-yellowDark text-black font-black uppercase text-sm tracking-wider rounded-2xl shadow-xl shadow-yellow-500/20 transition-all flex items-center justify-center">
-                        <i class="fa-solid fa-lock mr-2"></i> Confirm Booking & Start Timer
+                        <i class="fa-solid fa-play mr-2"></i> Start Hire & Timer
                     </button>
                 </div>
             </form>
@@ -668,23 +646,16 @@
             { id: 'spare-6', name: 'Mountain Tyre 26x2.10', category: 'Tubes & Tyres', price: 1800, stock: 4, threshold: 3 }
         ];
 
-        const defaultBookings = [
-            {
-                id: 'OR-7291',
-                bikeId: 'bike-5',
-                bikeName: 'Trailblazer X-treme',
-                location: 'Central Hub - Main Shop',
-                durationUnit: 'minutes',
-                durationVal: 90,
-                totalPrice: 90,
-                status: 'active',
-                createdAt: new Date().toISOString()
-            }
-        ];
+        const defaultBookings = [];
 
         let bikes = JSON.parse(localStorage.getItem('outriderz_bikes')) || defaultBikes;
         let spares = JSON.parse(localStorage.getItem('outriderz_spares')) || defaultSpares;
         let bookings = JSON.parse(localStorage.getItem('outriderz_bookings')) || defaultBookings;
+        bookings.forEach(booking => {
+            if (!booking.startedAt && booking.status === 'active') {
+                booking.startedAt = booking.createdAt || new Date().toISOString();
+            }
+        });
 
         let currentTypeFilter = 'all';
         let currentRentalsTab = 'all';
@@ -698,6 +669,7 @@
             updateBadges();
             checkLowStockAlerts();
         };
+        window.setInterval(updateActiveRentalTimers, 1000);
 
         function saveState() {
             localStorage.setItem('outriderz_bikes', JSON.stringify(bikes));
@@ -854,7 +826,7 @@
                         <div>
                             ${bike.status === 'available' ? `
                                 <button onclick="openBookingModal('${bike.id}')" class="w-full py-3.5 bg-outriderz-yellow hover:bg-outriderz-yellowDark text-black font-black uppercase tracking-wider rounded-2xl text-xs shadow-lg shadow-yellow-500/10 transition-all flex items-center justify-center">
-                                    <i class="fa-solid fa-coins mr-2"></i> Book at 1 KES / Min
+                                    <i class="fa-solid fa-coins mr-2"></i> Hire at 1 KES / Min
                                 </button>
                             ` : `
                                 <button disabled class="w-full py-3.5 bg-zinc-900 text-zinc-600 font-bold uppercase tracking-wider rounded-2xl text-xs cursor-not-allowed">
@@ -874,11 +846,8 @@
             if (!bike) return;
 
             document.getElementById('modal-bike-id').value = bike.id;
-            document.getElementById('modal-bike-title').innerText = `Book ${bike.name}`;
-            document.getElementById('duration-unit').value = 'minutes';
-            document.getElementById('rental-duration-val').value = '60';
+            document.getElementById('modal-bike-title').innerText = `Hire ${bike.name}`;
 
-            calculateBookingTotal();
             document.getElementById('booking-modal').classList.remove('hidden');
             document.getElementById('booking-modal').classList.add('flex');
         }
@@ -888,58 +857,29 @@
             document.getElementById('booking-modal').classList.remove('flex');
         }
 
-        function calculateBookingTotal() {
-            const unit = document.getElementById('duration-unit').value;
-            const val = parseInt(document.getElementById('rental-duration-val')) || 1;
-            const valInput = document.getElementById('rental-duration-val');
-            const num = parseInt(valInput.value) || 1;
-            const numLabel = document.getElementById('duration-num-label');
-
-            let totalMinutes = 0;
-            if (unit === 'minutes') {
-                numLabel.innerText = 'Number of Minutes';
-                totalMinutes = num;
-            } else if (unit === 'hours') {
-                numLabel.innerText = 'Number of Hours';
-                totalMinutes = num * 60;
-            } else if (unit === 'days') {
-                numLabel.innerText = 'Number of Days';
-                totalMinutes = num * 1440;
-            }
-
-            const totalPrice = totalMinutes * 1; // 1 KES per minute
-
-            document.getElementById('summary-rate-desc').innerText = `${num} ${unit} = ${totalMinutes} total minutes @ 1 KES / min`;
-            document.getElementById('summary-base-price').innerText = `${totalPrice} KES`;
-            document.getElementById('summary-total-price').innerText = `${totalPrice} KES`;
-        }
-
         function handleBookingSubmit(event) {
             event.preventDefault();
             const bikeId = document.getElementById('modal-bike-id').value;
             const bike = bikes.find(b => b.id === bikeId);
-            if (!bike) return;
+            if (!bike || bike.status !== 'available') {
+                showToast('This bicycle is no longer available to hire.', 'error');
+                closeBookingModal();
+                renderCatalog();
+                return;
+            }
 
             const location = document.getElementById('pickup-location').value;
-            const durationUnit = document.getElementById('duration-unit').value;
-            const durationVal = parseInt(document.getElementById('rental-duration-val').value) || 1;
-
-            let totalMinutes = durationVal;
-            if (durationUnit === 'hours') totalMinutes = durationVal * 60;
-            if (durationUnit === 'days') totalMinutes = durationVal * 1440;
-
-            const totalPrice = totalMinutes * 1;
+            const startedAt = new Date().toISOString();
 
             const newBooking = {
                 id: `OR-${Math.floor(1000 + Math.random() * 9000)}`,
                 bikeId: bike.id,
                 bikeName: bike.name,
                 location: location,
-                durationUnit: durationUnit,
-                durationVal: durationVal,
-                totalPrice: totalPrice,
+                startedAt: startedAt,
+                totalPrice: 0,
                 status: 'active',
-                createdAt: new Date().toISOString()
+                createdAt: startedAt
             };
 
             bookings.unshift(newBooking);
@@ -947,8 +887,9 @@
 
             saveState();
             closeBookingModal();
-            showToast(`Successfully booked ${bike.name}! Rate: 1 KES/min`, 'success');
+            showToast(`${bike.name} hire started. Timer is running at 1 KES per completed minute.`, 'success');
             renderCatalog();
+            renderRentals();
             renderAdmin();
             updateBadges();
         }
@@ -987,6 +928,12 @@
                 else if (booking.status === 'completed') badge = '<span class="px-3 py-1 bg-zinc-800 text-zinc-400 text-[10px] font-black uppercase tracking-wider rounded-full">Completed</span>';
                 else badge = '<span class="px-3 py-1 bg-outriderz-red/20 text-outriderz-red text-[10px] font-black uppercase tracking-wider rounded-full">Cancelled</span>';
 
+                const startedAt = new Date(booking.startedAt || booking.createdAt);
+                const returnedAt = booking.returnedAt ? new Date(booking.returnedAt) : null;
+                const elapsedMilliseconds = Math.max(0, (returnedAt || new Date()).getTime() - startedAt.getTime());
+                const elapsedMinutes = Math.floor(elapsedMilliseconds / 60000);
+                const amountDue = booking.status === 'active' ? elapsedMinutes : (booking.totalPrice || 0);
+                const elapsedDisplay = formatElapsedTime(elapsedMilliseconds);
                 const card = document.createElement('div');
                 card.className = 'bg-zinc-950 rounded-3xl border border-zinc-800 p-6 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6';
                 card.innerHTML = `
@@ -999,13 +946,14 @@
                             </div>
                             <h4 class="text-lg font-black uppercase text-white tracking-wide">${booking.bikeName}</h4>
                             <p class="text-xs text-zinc-400 font-semibold"><i class="fa-solid fa-location-dot mr-1.5 text-outriderz-red"></i>${booking.location}</p>
-                            <p class="text-xs text-zinc-500"><i class="fa-regular fa-clock mr-1.5"></i> Booked duration: ${booking.durationVal} ${booking.durationUnit}</p>
+                            <p class="text-xs text-zinc-500"><i class="fa-regular fa-clock mr-1.5"></i> Started at: ${startedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                            <p class="text-xs font-bold text-outriderz-yellow"><i class="fa-solid fa-stopwatch mr-1.5"></i> Elapsed: <span data-rental-elapsed="${booking.id}">${elapsedDisplay}</span></p>
                         </div>
                     </div>
                     <div class="flex flex-wrap md:flex-nowrap items-center gap-6 w-full md:w-auto justify-between border-t md:border-t-0 pt-4 md:pt-0 border-zinc-800">
                         <div class="text-left md:text-right">
-                            <span class="text-[9px] uppercase font-black text-zinc-500 tracking-wider block">Total KES</span>
-                            <span class="text-2xl font-black text-outriderz-yellow">${booking.totalPrice} KES</span>
+                            <span class="text-[9px] uppercase font-black text-zinc-500 tracking-wider block">${booking.status === 'active' ? 'Amount Due' : 'Final Charge'}</span>
+                            <span class="text-2xl font-black text-outriderz-yellow"><span data-rental-cost="${booking.id}">${amountDue}</span> KES</span>
                         </div>
                         <div class="flex items-center space-x-3">
                             ${booking.status === 'active' ? `
@@ -1027,23 +975,65 @@
 
         function completeBooking(bookingId) {
             const booking = bookings.find(b => b.id === bookingId);
-            if (!booking) return;
+            if (!booking || booking.status !== 'active') return;
+
+            const returnedAt = new Date();
+            const startedAt = new Date(booking.startedAt || booking.createdAt);
+            const elapsedMinutes = Math.floor(Math.max(0, returnedAt.getTime() - startedAt.getTime()) / 60000);
+            if (!window.confirm(`Return ${booking.bikeName}?\nElapsed time: ${formatElapsedTime(returnedAt.getTime() - startedAt.getTime())}\nFinal charge: ${elapsedMinutes} KES (1 KES per completed minute)`)) return;
 
             booking.status = 'completed';
+            booking.returnedAt = returnedAt.toISOString();
+            booking.elapsedMinutes = elapsedMinutes;
+            booking.totalPrice = elapsedMinutes;
             const bike = bikes.find(b => b.id === booking.bikeId);
             if (bike) bike.status = 'available';
 
             saveState();
-            showToast('Bike returned successfully. Thank you for riding with Outriderz!', 'success');
+            showToast(`Bike returned. Final charge: ${booking.totalPrice} KES for ${booking.elapsedMinutes} completed minutes.`, 'success');
             renderRentals();
             renderCatalog();
             renderAdmin();
         }
 
+        function formatElapsedTime(milliseconds) {
+            const totalSeconds = Math.floor(Math.max(0, milliseconds) / 1000);
+            const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+            const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+            const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+            return `${hours}:${minutes}:${seconds}`;
+        }
+
+        function updateActiveRentalTimers() {
+            const now = Date.now();
+            bookings.filter(booking => booking.status === 'active').forEach(booking => {
+                const startedAt = new Date(booking.startedAt || booking.createdAt).getTime();
+                const elapsedMilliseconds = Math.max(0, now - startedAt);
+                const elapsedMinutes = Math.floor(elapsedMilliseconds / 60000);
+                const elapsedElement = document.querySelector(`[data-rental-elapsed="${booking.id}"]`);
+                const costElement = document.querySelector(`[data-rental-cost="${booking.id}"]`);
+                const adminElapsedElement = document.querySelector(`[data-admin-rental-elapsed="${booking.id}"]`);
+                const adminCostElement = document.querySelector(`[data-admin-rental-cost="${booking.id}"]`);
+                if (elapsedElement) elapsedElement.textContent = formatElapsedTime(elapsedMilliseconds);
+                if (costElement) costElement.textContent = elapsedMinutes;
+                if (adminElapsedElement) adminElapsedElement.textContent = formatElapsedTime(elapsedMilliseconds);
+                if (adminCostElement) adminCostElement.textContent = elapsedMinutes;
+            });
+            const accruedRevenue = bookings.filter(booking => booking.status !== 'cancelled').reduce((total, booking) => {
+                if (booking.status !== 'active') return total + (booking.totalPrice || 0);
+                const startedAt = new Date(booking.startedAt || booking.createdAt).getTime();
+                return total + Math.floor(Math.max(0, now - startedAt) / 60000);
+            }, 0);
+            document.getElementById('stat-revenue').innerText = `${accruedRevenue} KES`;
+        }
+
         function cancelBooking(bookingId) {
             const booking = bookings.find(b => b.id === bookingId);
-            if (!booking) return;
+            if (!booking || booking.status !== 'active') return;
 
+            booking.returnedAt = new Date().toISOString();
+            booking.elapsedMinutes = 0;
+            booking.totalPrice = 0;
             booking.status = 'cancelled';
             const bike = bikes.find(b => b.id === booking.bikeId);
             if (bike) bike.status = 'available';
@@ -1167,7 +1157,11 @@
             const totalFleet = bikes.length;
             const activeRentals = bikes.filter(b => b.status === 'rented').length;
             const lowStockCount = spares.filter(s => s.stock <= s.threshold).length;
-            const totalRevenue = bookings.filter(b => b.status !== 'cancelled').reduce((acc, curr) => acc + curr.totalPrice, 0);
+            const totalRevenue = bookings.filter(b => b.status !== 'cancelled').reduce((acc, booking) => {
+                if (booking.status !== 'active') return acc + (booking.totalPrice || 0);
+                const startedAt = new Date(booking.startedAt || booking.createdAt).getTime();
+                return acc + Math.floor(Math.max(0, Date.now() - startedAt) / 60000);
+            }, 0);
 
             document.getElementById('stat-total-fleet').innerText = totalFleet;
             document.getElementById('stat-active-rentals').innerText = activeRentals;
@@ -1211,17 +1205,24 @@
             const bookingsList = document.getElementById('admin-bookings-list');
             bookingsList.innerHTML = '';
             bookings.slice(0, 5).forEach(booking => {
+                const startedAt = new Date(booking.startedAt || booking.createdAt);
+                const endedAt = booking.returnedAt ? new Date(booking.returnedAt) : new Date();
+                const elapsedMilliseconds = Math.max(0, endedAt.getTime() - startedAt.getTime());
+                const elapsedMinutes = booking.status === 'active'
+                    ? Math.floor(elapsedMilliseconds / 60000)
+                    : (booking.elapsedMinutes ?? Math.floor(elapsedMilliseconds / 60000));
+                const amount = booking.status === 'active' ? elapsedMinutes : (booking.totalPrice || 0);
                 const item = document.createElement('div');
                 item.className = 'p-4 rounded-2xl border border-zinc-800 bg-zinc-950 space-y-2';
                 item.innerHTML = `
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-black text-outriderz-yellow">#${booking.id}</span>
-                        <span class="text-xs font-black text-white">${booking.totalPrice} KES</span>
+                        <span class="text-xs font-black text-white"><span data-admin-rental-cost="${booking.id}">${amount}</span> KES</span>
                     </div>
                     <p class="font-black text-sm text-white uppercase">${booking.bikeName}</p>
                     <p class="text-xs text-zinc-400 font-semibold"><i class="fa-solid fa-location-dot mr-1 text-outriderz-red"></i>${booking.location}</p>
                     <div class="flex items-center justify-between text-[11px] text-zinc-500 pt-2 border-t border-zinc-800">
-                        <span>Duration: ${booking.durationVal} ${booking.durationUnit}</span>
+                        <span>${booking.status === 'active' ? 'Elapsed:' : 'Ride time:'} <span data-admin-rental-elapsed="${booking.id}">${formatElapsedTime(elapsedMilliseconds)}</span></span>
                         <span class="font-black uppercase ${booking.status === 'active' ? 'text-emerald-400' : 'text-zinc-500'}">${booking.status}</span>
                     </div>
                 `;
