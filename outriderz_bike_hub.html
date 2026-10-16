@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Outriderz Bike Hub - Rental & Spares Management System</title>
+    <title>Outriders Bike Shop - Rental & Spares Management System</title>
     <link rel="icon" type="image/jpeg" href="outriderz-logo.jpe">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -118,24 +118,21 @@
     <header class="bg-outriderz-zinc900 border-b border-zinc-800 sticky top-0 z-40 shadow-xl">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             <!-- Brand Logo -->
-            <div class="flex items-center space-x-3 cursor-pointer group" onclick="switchView('catalog')">
+            <div class="flex items-center space-x-3 cursor-pointer group" onclick="switchView('home')">
                 <img src="outriderz-logo.jpe" alt="Outriders Biking and Adventure" class="w-12 h-12 rounded-2xl object-cover shadow-lg shadow-red-600/30 group-hover:scale-105 transition-transform">
                 <div>
-                    <span class="text-2xl font-black tracking-wider uppercase text-white">Outriderz <span class="text-outriderz-yellow">Bike Hub</span></span>
+                    <span class="text-2xl font-black tracking-wider uppercase text-white">Outriders <span class="text-outriderz-yellow">Bike Shop</span></span>
                     <p class="text-[10px] uppercase font-bold tracking-widest text-outriderz-red">1 KES / Min Rental & Spares</p>
                 </div>
             </div>
 
             <!-- Navigation Tabs -->
             <nav class="hidden md:flex items-center space-x-1 bg-zinc-950 p-1.5 rounded-2xl border border-zinc-800">
-                <button onclick="switchView('catalog')" id="nav-catalog" class="px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all text-black bg-outriderz-yellow shadow-md">
-                    <i class="fa-solid fa-store mr-2"></i>Fleet Catalog
+                <button onclick="switchView('home')" id="nav-home" class="px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all text-black bg-outriderz-yellow shadow-md">
+                    <i class="fa-solid fa-house mr-2"></i>Home
                 </button>
-                <button onclick="switchView('rentals')" id="nav-rentals" class="px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all text-zinc-400 hover:text-white">
-                    <i class="fa-solid fa-ticket mr-2"></i>My Bookings <span id="active-badge" class="ml-1.5 px-2 py-0.5 text-[10px] bg-outriderz-red text-white rounded-full font-bold">0</span>
-                </button>
-                <button onclick="switchView('inventory')" id="nav-inventory" class="px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all text-zinc-400 hover:text-white">
-                    <i class="fa-solid fa-boxes-stacked mr-2"></i>Shop Spares <span id="inventory-alert-badge" class="ml-1.5 px-1.5 py-0.5 text-[9px] bg-outriderz-red text-white rounded-full font-bold hidden">!</span>
+                <button onclick="switchView('catalog')" id="nav-catalog" class="px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all text-zinc-400 hover:text-white">
+                    <i class="fa-solid fa-store mr-2"></i>Bike Shop
                 </button>
                 <button onclick="switchView('admin')" id="nav-admin" class="px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all text-zinc-400 hover:text-white">
                     <i class="fa-solid fa-gauge-high mr-2"></i>Admin
@@ -162,15 +159,11 @@
 
         <!-- Mobile Navigation Menu -->
         <div id="mobile-menu" class="hidden md:hidden bg-outriderz-zinc900 border-b border-zinc-800 px-4 pt-3 pb-5 space-y-2">
+            <button onclick="switchView('home'); toggleMobileMenu();" class="w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-white hover:bg-zinc-800 flex items-center">
+                <i class="fa-solid fa-house mr-3 text-outriderz-yellow w-5"></i>Home
+            </button>
             <button onclick="switchView('catalog'); toggleMobileMenu();" class="w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-white hover:bg-zinc-800 flex items-center">
-                <i class="fa-solid fa-store mr-3 text-outriderz-yellow w-5"></i>Fleet Catalog
-            </button>
-            <button onclick="switchView('rentals'); toggleMobileMenu();" class="w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-white hover:bg-zinc-800 flex items-center justify-between">
-                <span class="flex items-center"><i class="fa-solid fa-ticket mr-3 text-outriderz-yellow w-5"></i>My Bookings</span>
-                <span id="mobile-active-badge" class="px-2 py-0.5 text-xs bg-outriderz-red text-white rounded-full font-bold">0</span>
-            </button>
-            <button onclick="switchView('inventory'); toggleMobileMenu();" class="w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-white hover:bg-zinc-800 flex items-center">
-                <i class="fa-solid fa-boxes-stacked mr-3 text-outriderz-yellow w-5"></i>Shop Spares & Stock
+                <i class="fa-solid fa-store mr-3 text-outriderz-yellow w-5"></i>Bike Shop
             </button>
             <button onclick="switchView('admin'); toggleMobileMenu();" class="w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-white hover:bg-zinc-800 flex items-center">
                 <i class="fa-solid fa-gauge-high mr-3 text-outriderz-yellow w-5"></i>Admin Dashboard
@@ -180,26 +173,24 @@
 
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        <!-- VIEW 1: CATALOG & HERO LANDING -->
-        <section id="view-catalog" class="space-y-10 fade-in">
-            <!-- Hero Landing Section -->
+        <section id="view-home" class="space-y-10 fade-in">
             <div class="relative rounded-3xl bg-gradient-to-r from-zinc-950 via-zinc-900 to-outriderz-redDark text-white overflow-hidden shadow-2xl p-8 sm:p-12 lg:p-16 flex flex-col justify-center border border-zinc-800">
                 <div class="absolute inset-0 opacity-15 bg-[radial-gradient(#facc15_1px,transparent_1px)] [background-size:20px_20px]"></div>
                 <div class="absolute -right-20 -bottom-20 w-96 h-96 bg-outriderz-yellow/10 rounded-full blur-3xl pointer-events-none"></div>
-                
                 <div class="relative z-10 max-w-2xl space-y-5">
                     <span class="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest bg-outriderz-yellow text-black shadow-md">
                         <i class="fa-solid fa-coins mr-2 text-outriderz-red"></i> 1 Minute = 1 KES (60 KES / Hour)
                     </span>
-                    <h1 class="text-4xl sm:text-6xl font-black tracking-tight leading-none uppercase">
-                        Standard Fleet at <span class="text-outriderz-yellow underline decoration-outriderz-red decoration-4">Outriderz</span>
-                    </h1>
+                    <h1 class="text-4xl sm:text-6xl font-black tracking-tight leading-none uppercase">Outriders Bike Shop</h1>
                     <p class="text-zinc-300 text-base sm:text-lg font-medium leading-relaxed">
-                        Rent professional Mountain bikes, Road racers, reliable City commuters, and BMX cruisers. Affordable rates with instant minute-based billing!
+                        Your one-stop shop for bike hire, spare parts, quality Ex-UK bikes, and bicycle repairs.
                     </p>
                     <div class="pt-2 flex flex-wrap gap-4">
-                        <a href="#catalog-filter-section" class="bg-outriderz-yellow hover:bg-outriderz-yellowDark text-black font-black uppercase tracking-wider px-8 py-4 rounded-2xl shadow-xl shadow-yellow-500/20 transition-all flex items-center text-sm">
-                            <i class="fa-solid fa-bicycle mr-2"></i> Browse Standard Bikes
+                        <button onclick="switchView('catalog')" class="bg-outriderz-yellow hover:bg-outriderz-yellowDark text-black font-black uppercase tracking-wider px-8 py-4 rounded-2xl shadow-xl shadow-yellow-500/20 transition-all flex items-center text-sm">
+                            <i class="fa-solid fa-bicycle mr-2"></i> Browse Bikes
+                        </button>
+                        <a href="https://wa.me/254700425515" target="_blank" rel="noopener noreferrer" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-wider px-8 py-4 rounded-2xl transition-all flex items-center text-sm">
+                            <i class="fa-brands fa-whatsapp mr-2"></i> Contact Us
                         </a>
                         <div class="flex items-center space-x-6 text-xs text-zinc-300 px-4 py-2 bg-zinc-950/80 rounded-2xl border border-zinc-800">
                             <div><strong class="text-outriderz-yellow block text-xl font-black">1 KES</strong> Per Minute</div>
@@ -210,6 +201,55 @@
                 </div>
             </div>
 
+            <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5" aria-label="Shop services">
+                <button onclick="switchView('catalog')" class="text-left p-5 rounded-2xl border border-zinc-800 bg-outriderz-zinc900 hover:border-outriderz-yellow transition-colors">
+                    <i class="fa-solid fa-bicycle text-outriderz-yellow text-xl"></i>
+                    <h2 class="mt-3 text-sm font-black uppercase text-white">Bike Hire</h2>
+                    <p class="mt-1 text-xs text-zinc-400">Hire a bike from 1 KES per minute.</p>
+                </button>
+                <a href="https://wa.me/254700425515?text=Hello%2C%20I%20would%20like%20to%20ask%20about%20bike%20spare%20parts." target="_blank" rel="noopener noreferrer" class="p-5 rounded-2xl border border-zinc-800 bg-outriderz-zinc900 hover:border-outriderz-yellow transition-colors">
+                    <i class="fa-solid fa-screwdriver-wrench text-outriderz-yellow text-xl"></i>
+                    <h2 class="mt-3 text-sm font-black uppercase text-white">Bike Spare Parts</h2>
+                    <p class="mt-1 text-xs text-zinc-400">Browse parts and accessories.</p>
+                </a>
+                <a href="#sale-bikes-section" class="p-5 rounded-2xl border border-zinc-800 bg-outriderz-zinc900 hover:border-outriderz-yellow transition-colors">
+                    <i class="fa-solid fa-tag text-outriderz-yellow text-xl"></i>
+                    <h2 class="mt-3 text-sm font-black uppercase text-white">Ex-UK Bikes Sale</h2>
+                    <p class="mt-1 text-xs text-zinc-400">See bikes available to buy.</p>
+                </a>
+                <a href="mailto:outridersbikingandadventure@gmail.com?subject=Bike%20repair%20enquiry" class="p-5 rounded-2xl border border-zinc-800 bg-outriderz-zinc900 hover:border-outriderz-yellow transition-colors">
+                    <i class="fa-solid fa-toolbox text-outriderz-yellow text-xl"></i>
+                    <h2 class="mt-3 text-sm font-black uppercase text-white">Bike Repair</h2>
+                    <p class="mt-1 text-xs text-zinc-400">Contact us to arrange a repair.</p>
+                </a>
+            </section>
+
+            <section id="sale-bikes-section" class="bg-outriderz-zinc900 rounded-3xl p-6 sm:p-8 shadow-xl border border-zinc-800 space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+                    <div>
+                        <p class="text-xs font-black uppercase tracking-widest text-outriderz-red">Available to buy</p>
+                        <h2 class="text-2xl font-black uppercase text-white tracking-wider mt-1">Ex-UK Bikes for Sale</h2>
+                        <p class="text-sm text-zinc-400 mt-2">Browse bicycles currently offered by Outriders Bike Shop.</p>
+                    </div>
+                    <a href="https://wa.me/254700425515" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black uppercase tracking-wider">
+                        <i class="fa-brands fa-whatsapp text-lg"></i> Ask about a bike
+                    </a>
+                </div>
+                <div id="sale-bikes-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                <p id="no-sale-bikes-message" class="hidden text-sm text-zinc-500 text-center py-6">No bikes are listed for sale right now. Please check back soon.</p>
+            </section>
+        </section>
+
+        <!-- BIKE HIRE CATALOG -->
+        <section id="view-catalog" class="hidden space-y-10 fade-in">
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div>
+                    <p class="text-xs font-black uppercase tracking-widest text-outriderz-red">Outriders Bike Shop</p>
+                    <h1 class="text-3xl font-black uppercase text-white tracking-wider mt-1">Bike Hire</h1>
+                    <p class="text-sm text-zinc-400 mt-2">Browse available bikes. Rentals are 1 KES per completed minute.</p>
+                </div>
+                <span class="text-sm font-black text-outriderz-yellow">60 KES / hour</span>
+            </div>
             <!-- Filters & Search Section -->
             <div id="catalog-filter-section" class="bg-outriderz-zinc900 rounded-3xl p-6 sm:p-8 shadow-xl border border-zinc-800 space-y-6">
                 <div class="flex flex-col lg:flex-row gap-5 items-center justify-between">
@@ -222,22 +262,10 @@
                             class="w-full pl-11 pr-4 py-3.5 bg-zinc-950 border border-zinc-800 rounded-2xl text-sm font-semibold text-white placeholder-zinc-500 focus:outline-none focus:border-outriderz-yellow transition-all">
                     </div>
 
-                    <!-- Type Filters (Standard Bikes Only) -->
+                    <!-- Bike Type Filter -->
                     <div class="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
                         <button onclick="setTypeFilter('all')" id="filter-type-all" class="filter-type-btn px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all bg-outriderz-yellow text-black shadow-md">
-                            All Standard
-                        </button>
-                        <button onclick="setTypeFilter('Mountain')" id="filter-type-Mountain" class="filter-type-btn px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all bg-zinc-950 text-zinc-400 hover:text-white border border-zinc-800">
-                            Mountain
-                        </button>
-                        <button onclick="setTypeFilter('Road')" id="filter-type-Road" class="filter-type-btn px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all bg-zinc-950 text-zinc-400 hover:text-white border border-zinc-800">
-                            Road
-                        </button>
-                        <button onclick="setTypeFilter('City')" id="filter-type-City" class="filter-type-btn px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all bg-zinc-950 text-zinc-400 hover:text-white border border-zinc-800">
-                            City Commuter
-                        </button>
-                        <button onclick="setTypeFilter('BMX')" id="filter-type-BMX" class="filter-type-btn px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all bg-zinc-950 text-zinc-400 hover:text-white border border-zinc-800">
-                            BMX / Cruiser
+                            All Bikes
                         </button>
                     </div>
 
@@ -267,6 +295,7 @@
                     <button onclick="resetFilters()" class="px-6 py-3 bg-outriderz-yellow text-black font-black uppercase text-xs rounded-xl hover:bg-outriderz-yellowDark transition-all">Reset Filters</button>
                 </div>
             </div>
+
         </section>
 
         <!-- VIEW 2: CUSTOMER MY BOOKINGS -->
@@ -294,9 +323,9 @@
                     <div class="w-20 h-20 bg-zinc-950 border border-zinc-800 rounded-2xl flex items-center justify-center mx-auto text-outriderz-yellow text-3xl">
                         <i class="fa-solid fa-ticket"></i>
                     </div>
-                    <h3 class="text-xl font-black uppercase text-white">No Active Reservations</h3>
-                    <p class="text-zinc-400 text-sm max-w-md mx-auto">There are no rentals to display. Ask Outriderz staff to start a hire when you collect a bike.</p>
-                    <button onclick="switchView('catalog')" class="px-8 py-3.5 bg-outriderz-yellow hover:bg-outriderz-yellowDark text-black font-black uppercase text-xs rounded-2xl shadow-lg transition-all">Explore Standard Fleet</button>
+                    <h3 class="text-xl font-black uppercase text-white">No Bookings Yet</h3>
+                    <p class="text-zinc-400 text-sm max-w-md mx-auto">Rental bookings and hire history will appear here. Start a hire from Fleet Management.</p>
+                    <button onclick="switchView('catalog')" class="px-8 py-3.5 bg-outriderz-yellow hover:bg-outriderz-yellowDark text-black font-black uppercase text-xs rounded-2xl shadow-lg transition-all">Explore Bike Shop</button>
                 </div>
             </div>
         </section>
@@ -370,16 +399,26 @@
 
         <!-- VIEW 4: ADMIN DASHBOARD -->
         <section id="view-admin" class="hidden space-y-8 fade-in">
+            <div class="grid grid-cols-1 gap-4">
+                <a href="#view-inventory" onclick="switchView('inventory')" class="flex items-center justify-between gap-4 rounded-2xl border border-zinc-800 bg-outriderz-zinc900 p-5 hover:border-outriderz-yellow transition-colors">
+                    <span class="flex items-center gap-3">
+                        <i class="fa-solid fa-boxes-stacked text-outriderz-yellow text-xl"></i>
+                        <span><strong class="block text-sm font-black uppercase text-white">Shop Spares</strong><small class="text-xs text-zinc-400">Manage shop inventory and restocking</small></span>
+                    </span>
+                    <span id="inventory-alert-badge" class="px-2 py-1 rounded-full bg-outriderz-red text-white text-xs font-black hidden">!</span>
+                </a>
+            </div>
             <!-- Stats Grid -->
+            <div id="admin-overview" class="space-y-8">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div class="bg-outriderz-zinc900 p-6 rounded-3xl border border-zinc-800 shadow-xl flex items-center space-x-5">
                     <div class="w-16 h-16 bg-zinc-950 text-outriderz-yellow border border-zinc-800 rounded-2xl flex items-center justify-center text-2xl shadow-inner">
-                        <i class="fa-solid fa-bicycle"></i>
+                        <i class="fa-solid fa-users"></i>
                     </div>
                     <div>
-                        <p class="text-[10px] font-black uppercase tracking-widest text-zinc-400">Standard Fleet</p>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-zinc-400">Customers</p>
                         <h3 id="stat-total-fleet" class="text-3xl font-black text-white mt-0.5">0</h3>
-                        <p class="text-xs text-outriderz-yellow font-bold mt-1">Active standard models</p>
+                        <p class="text-xs text-outriderz-yellow font-bold mt-1">Registered customers</p>
                     </div>
                 </div>
                 <div class="bg-outriderz-zinc900 p-6 rounded-3xl border border-zinc-800 shadow-xl flex items-center space-x-5">
@@ -387,9 +426,9 @@
                         <i class="fa-solid fa-route"></i>
                     </div>
                     <div>
-                        <p class="text-[10px] font-black uppercase tracking-widest text-zinc-400">Active Rentals</p>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-zinc-400">Active Hires</p>
                         <h3 id="stat-active-rentals" class="text-3xl font-black text-white mt-0.5">0</h3>
-                        <p class="text-xs text-outriderz-red font-bold mt-1">On road (1 KES/min)</p>
+                        <p class="text-xs text-outriderz-red font-bold mt-1">Running timers (1 KES/min)</p>
                     </div>
                 </div>
                 <div class="bg-outriderz-zinc900 p-6 rounded-3xl border border-zinc-800 shadow-xl flex items-center space-x-5">
@@ -414,50 +453,54 @@
                 </div>
             </div>
 
-            <!-- Management Sections -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Fleet Management (2 cols) -->
-                <div class="lg:col-span-2 bg-outriderz-zinc900 rounded-3xl p-6 sm:p-8 shadow-xl border border-zinc-800 space-y-6">
-                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-zinc-800">
-                        <div>
-                            <h3 class="text-xl font-black uppercase text-white tracking-wider">Fleet Management (Standard Bikes)</h3>
-                            <p class="text-xs text-zinc-400">Only start a bike timer when staff hand the bike to a customer.</p>
-                        </div>
-                        <button onclick="openAddBikeModal()" class="px-5 py-3 bg-outriderz-yellow hover:bg-outriderz-yellowDark text-black rounded-2xl text-xs font-black uppercase tracking-wider shadow-lg shadow-yellow-500/20 transition-all flex items-center">
-                            <i class="fa-solid fa-plus mr-2"></i> Add Standard Bike
+            <div class="bg-outriderz-zinc900 rounded-3xl p-6 sm:p-8 shadow-xl border border-zinc-800 space-y-5">
+                <div class="flex items-center justify-between gap-4 pb-5 border-b border-zinc-800">
+                    <div>
+                        <h3 class="text-xl font-black uppercase text-white tracking-wider">Customers &amp; Hire Timers</h3>
+                        <p class="text-xs text-zinc-400 mt-1">Adding a customer starts the timer. Return the hire to stop the timer and calculate the final charge.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span id="customer-count" class="px-3 py-1 rounded-full bg-zinc-800 text-outriderz-yellow text-xs font-black">0 customers</span>
+                        <button id="add-customer-button" onclick="openAddCustomerModal()" class="px-5 py-3 bg-outriderz-yellow hover:bg-outriderz-yellowDark text-black rounded-2xl text-xs font-black uppercase tracking-wider shadow-lg shadow-yellow-500/20 transition-all flex items-center">
+                            <i class="fa-solid fa-user-plus mr-2"></i> Add Customer
                         </button>
                     </div>
-
-                    <!-- Fleet Table -->
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="border-b border-zinc-800 text-zinc-500 text-[10px] font-black uppercase tracking-widest">
-                                    <th class="py-3 px-4">Bicycle Model</th>
-                                    <th class="py-3 px-4">Category</th>
-                                    <th class="py-3 px-4">Rate (1 KES / Min)</th>
-                                    <th class="py-3 px-4">Status</th>
-                                    <th class="py-3 px-4 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="admin-fleet-table" class="divide-y divide-zinc-800/60 text-sm font-medium">
-                                <!-- Dynamic rows -->
-                            </tbody>
-                        </table>
-                    </div>
                 </div>
-
-                <!-- Recent Bookings Management (1 col) -->
-                <div class="bg-outriderz-zinc900 rounded-3xl p-6 sm:p-8 shadow-xl border border-zinc-800 space-y-6">
-                    <div class="pb-6 border-b border-zinc-800">
-                        <h3 class="text-xl font-black uppercase text-white tracking-wider">Manage Rentals</h3>
-                        <p class="text-xs text-zinc-400">Admin controls for starting, returning, and cancelling hires.</p>
-                    </div>
-                    <div id="admin-bookings-list" class="space-y-4 max-h-[520px] overflow-y-auto pr-1">
-                        <!-- Dynamic incoming booking cards -->
-                    </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-zinc-800 text-zinc-500 text-[10px] font-black uppercase tracking-widest">
+                                <th class="py-3 px-4">Customer Name</th>
+                                <th class="py-3 px-4">ID / Admission Number</th>
+                                <th class="py-3 px-4">Starting Time</th>
+                                <th class="py-3 px-4">Stopping Time</th>
+                                <th class="py-3 px-4">Stopwatch</th>
+                                <th class="py-3 px-4">Amount</th>
+                                <th class="py-3 px-4 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-customers-list" class="divide-y divide-zinc-800/60 text-sm font-medium"></tbody>
+                    </table>
                 </div>
+                <p id="no-customers-message" class="hidden text-center text-sm text-zinc-500 py-4">No customers have been added yet.</p>
             </div>
+
+            <div class="bg-outriderz-zinc900 rounded-3xl p-6 sm:p-8 shadow-xl border border-zinc-800 space-y-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-zinc-800">
+                        <div>
+                            <h3 class="text-xl font-black uppercase text-white tracking-wider">Bikes for Sale</h3>
+                            <p class="text-xs text-zinc-400 mt-1">Manage the bikes shown in the public shop's sale section.</p>
+                        </div>
+                        <button onclick="openSaleBikeModal()" class="px-5 py-3 bg-outriderz-yellow hover:bg-outriderz-yellowDark text-black rounded-2xl text-xs font-black uppercase tracking-wider shadow-lg transition-all">
+                            <i class="fa-solid fa-plus mr-2"></i> Add Bike for Sale
+                        </button>
+                    </div>
+                    <div id="admin-sale-bikes-list" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+                    <p id="admin-no-sale-bikes-message" class="hidden text-sm text-zinc-500 text-center py-6">No sale bikes yet. Add one to show it on the home page.</p>
+                    <p class="text-xs text-amber-700">Demo limitation: photos and listings are saved only in this browser. They will not be shared with visitors until the shop is connected to a backend.</p>
+            </div>
+            </div>
+            <div id="admin-workspace" class="space-y-8"></div>
         </section>
 
     </main>
@@ -482,25 +525,27 @@
 
             <form id="booking-form" onsubmit="handleBookingSubmit(event)" class="space-y-5">
                 <input type="hidden" id="modal-bike-id">
-                
+                <div id="customer-bike-picker" class="hidden">
+                    <label for="customer-bike-id" class="block text-xs font-black text-outriderz-yellow uppercase tracking-wider mb-2">Bike for Hire</label>
+                    <select id="customer-bike-id" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-outriderz-yellow"></select>
+                </div>
                 <div>
-                    <label class="block text-xs font-black text-outriderz-yellow uppercase tracking-wider mb-2">Pickup Hub Station</label>
-                    <select id="pickup-location" required class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-outriderz-yellow">
-                        <option value="Central Hub - Main Shop">Central Hub - Main Shop</option>
-                        <option value="Town Branch Station">Town Branch Station</option>
-                        <option value="Parkside Station">Parkside Station</option>
-                        <option value="Market Square Station">Market Square Station</option>
-                    </select>
+                    <label for="customer-name" class="block text-xs font-black text-outriderz-yellow uppercase tracking-wider mb-2">Customer Name</label>
+                    <input id="customer-name" type="text" required maxlength="100" autocomplete="name" placeholder="Enter the customer's full name" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-outriderz-yellow">
+                </div>
+                <div>
+                    <label for="customer-id" class="block text-xs font-black text-outriderz-yellow uppercase tracking-wider mb-2">ID Number / Admission Number</label>
+                    <input id="customer-id" type="text" required maxlength="40" autocomplete="off" placeholder="Enter ID or admission number" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-outriderz-yellow">
                 </div>
 
-                <div class="bg-zinc-950 rounded-2xl p-4 border border-zinc-800 space-y-2">
+                <div id="hire-rate-info" class="bg-zinc-950 rounded-2xl p-4 border border-zinc-800 space-y-2">
                     <p class="text-sm font-black uppercase text-outriderz-yellow">1 KES per completed minute</p>
-                    <p class="text-xs text-zinc-400">The live timer and amount due will appear in My Bookings. Partial minutes are not charged.</p>
+                    <p class="text-xs text-zinc-400">The live timer and amount due will appear in the customer list. Partial minutes are not charged.</p>
                 </div>
 
                 <div class="pt-2">
-                    <button type="submit" class="w-full py-4 bg-outriderz-yellow hover:bg-outriderz-yellowDark text-black font-black uppercase text-sm tracking-wider rounded-2xl shadow-xl shadow-yellow-500/20 transition-all flex items-center justify-center">
-                        <i class="fa-solid fa-play mr-2"></i> Admin: Start Hire & Timer
+                    <button id="booking-submit-button" type="submit" class="w-full py-4 bg-outriderz-yellow hover:bg-outriderz-yellowDark text-black font-black uppercase text-sm tracking-wider rounded-2xl shadow-xl shadow-yellow-500/20 transition-all flex items-center justify-center">
+                        <i class="fa-solid fa-play mr-2"></i> Add Customer & Start Timer
                     </button>
                 </div>
             </form>
@@ -509,15 +554,15 @@
 
     <!-- ADD BICYCLE MODAL -->
     <div id="add-bike-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
-        <div class="bg-outriderz-zinc900 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-6 border border-zinc-800 transform transition-all fade-in">
+        <div class="bg-outriderz-zinc900 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-6 border border-zinc-800 transform transition-all fade-in max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
                 <div class="flex items-center space-x-3">
                     <div class="w-12 h-12 bg-outriderz-red text-white rounded-2xl flex items-center justify-center font-black">
                         <i class="fa-solid fa-bicycle text-xl"></i>
                     </div>
                     <div>
-                        <h3 class="text-xl font-black uppercase text-white tracking-wider">Add Standard Bicycle</h3>
-                        <p class="text-xs text-zinc-400">Expand the Outriderz standard fleet</p>
+                        <h3 class="text-xl font-black uppercase text-white tracking-wider">Add Bike</h3>
+                        <p class="text-xs text-zinc-400">Add a bike to the Outriders Bike Shop</p>
                     </div>
                 </div>
                 <button onclick="closeAddBikeModal()" class="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-700 transition-all">
@@ -526,6 +571,7 @@
             </div>
 
             <form id="add-bike-form" onsubmit="handleAddNewBike(event)" class="space-y-4">
+                <input type="hidden" id="edit-bike-id">
                 <div>
                     <label class="block text-xs font-black text-outriderz-yellow uppercase tracking-wider mb-2">Bicycle Model Name</label>
                     <input type="text" id="new-bike-name" required placeholder="e.g. Outrider Ranger X" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-outriderz-yellow">
@@ -547,11 +593,54 @@
                     </div>
                 </div>
 
+                <div>
+                    <label class="block text-xs font-black text-outriderz-yellow uppercase tracking-wider mb-2">Bike Description</label>
+                    <textarea id="new-bike-description" rows="3" placeholder="Describe the bike's condition, features, or what makes it special." class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-outriderz-yellow"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-black text-outriderz-yellow uppercase tracking-wider mb-2">Bike Photo</label>
+                    <input type="file" id="new-bike-image" accept="image/*" onchange="previewBikeImage(event)" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-sm text-zinc-400 file:mr-3 file:rounded-lg file:border-0 file:bg-outriderz-yellow file:px-3 file:py-2 file:font-bold file:text-black">
+                    <p class="text-[11px] text-zinc-500 mt-2">Upload a clear photo of the actual bike. The image is resized for this browser demo.</p>
+                    <img id="new-bike-image-preview" alt="Bike photo preview" class="hidden mt-3 h-36 w-full rounded-xl object-cover border border-zinc-800">
+                </div>
                 <div class="pt-2">
-                    <button type="submit" class="w-full py-4 bg-outriderz-yellow hover:bg-outriderz-yellowDark text-black font-black uppercase text-sm tracking-wider rounded-2xl shadow-xl shadow-yellow-500/20 transition-all flex items-center justify-center">
-                        <i class="fa-solid fa-plus mr-2"></i> Save Standard Bike
+                    <button id="save-bike-button" type="submit" class="w-full py-4 bg-outriderz-yellow hover:bg-outriderz-yellowDark text-black font-black uppercase text-sm tracking-wider rounded-2xl shadow-xl shadow-yellow-500/20 transition-all flex items-center justify-center">
+                        <i class="fa-solid fa-plus mr-2"></i> Save Bike
                     </button>
                 </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="sale-bike-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+        <div class="bg-outriderz-zinc900 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-6 border border-zinc-800 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
+                <div>
+                    <h3 class="text-xl font-black uppercase text-white tracking-wider">Add Bike for Sale</h3>
+                    <p class="text-xs text-zinc-400 mt-1">This listing will appear on the public home page.</p>
+                </div>
+                <button onclick="closeSaleBikeModal()" class="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="sale-bike-form" onsubmit="handleAddSaleBike(event)" class="space-y-4">
+                <input id="edit-sale-bike-id" type="hidden">
+                <div>
+                    <label class="block text-xs font-black text-outriderz-yellow uppercase tracking-wider mb-2">Bike Name</label>
+                    <input id="sale-bike-name" required maxlength="80" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-outriderz-yellow">
+                </div>
+                <div>
+                    <label class="block text-xs font-black text-outriderz-yellow uppercase tracking-wider mb-2">Description</label>
+                    <textarea id="sale-bike-description" required maxlength="500" rows="3" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-outriderz-yellow"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-black text-outriderz-yellow uppercase tracking-wider mb-2">Sale Price (KES)</label>
+                    <input id="sale-bike-price" type="number" required min="1" step="1" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-outriderz-yellow">
+                </div>
+                <div>
+                    <label class="block text-xs font-black text-outriderz-yellow uppercase tracking-wider mb-2">Actual Bike Photo</label>
+                    <input id="sale-bike-image" type="file" accept="image/*" onchange="previewSaleBikeImage(event)" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-sm text-zinc-400 file:mr-3 file:rounded-lg file:border-0 file:bg-outriderz-yellow file:px-3 file:py-2 file:font-bold file:text-black">
+                    <img id="sale-bike-image-preview" alt="Sale bike photo preview" class="hidden mt-3 h-36 w-full rounded-xl object-cover border border-zinc-800">
+                </div>
+                <button id="save-sale-bike-button" type="submit" class="w-full py-4 bg-outriderz-yellow hover:bg-outriderz-yellowDark text-black font-black uppercase text-sm tracking-wider rounded-2xl">Publish Sale Bike</button>
             </form>
         </div>
     </div>
@@ -619,21 +708,22 @@
     </div>
 
     <!-- TOAST NOTIFICATION CONTAINER -->
-    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+    <div id="toast-container" class="fixed bottom-24 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
     <footer class="bg-outriderz-zinc900 border-t border-zinc-800 mt-16 py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-zinc-500 gap-4">
             <div class="flex items-center space-x-3">
                 <img src="outriderz-logo.jpe" alt="" class="w-9 h-9 rounded-xl object-cover">
-                <span class="font-black uppercase text-white tracking-wider">Outriderz Bike Hub</span> &copy; 2026. Standard Fleet & Low-Maintenance Spares System.
+                <span class="font-black uppercase text-white tracking-wider">Outriders Bike Shop</span> &copy; 2026. Bike Rentals & Low-Maintenance Spares.
             </div>
             <div class="flex items-center space-x-6 font-semibold">
-                <a href="#" class="hover:text-outriderz-yellow transition-all">Hub Branches</a>
-                <a href="#" class="hover:text-outriderz-yellow transition-all">KES Rate Calculator</a>
-                <a href="#" class="hover:text-outriderz-yellow transition-all">Support</a>
+                <a href="mailto:outridersbikingandadventure@gmail.com" class="hover:text-outriderz-yellow transition-all">outridersbikingandadventure@gmail.com</a>
             </div>
         </div>
     </footer>
+    <a href="https://wa.me/254700425515" target="_blank" rel="noopener noreferrer" aria-label="Chat with Outriders Bike Shop on WhatsApp" title="Chat with us on WhatsApp" class="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-[#25D366] hover:bg-[#1ebe5d] text-white shadow-2xl flex items-center justify-center text-3xl">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
 
     <script>
         // Default Standard Bikes (NO Electric Bikes)
@@ -643,6 +733,7 @@
                 name: 'Outriderz Apex Pro',
                 type: 'Mountain',
                 gears: '21-Speed Shimano Tourney',
+                description: 'A versatile mountain bike with 21-speed gearing for everyday rides and local trails.',
                 status: 'available',
                 image: 'https://images.unsplash.com/photo-1576435728678-68d0fbf94e91?auto=format&fit=crop&w=600&q=80'
             },
@@ -651,6 +742,7 @@
                 name: 'Velocity Road Master',
                 type: 'Road',
                 gears: '14-Speed Road Shifters',
+                description: 'A lightweight road bike with responsive shifting for smooth rides on paved roads.',
                 status: 'available',
                 image: 'https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?auto=format&fit=crop&w=600&q=80'
             },
@@ -659,6 +751,7 @@
                 name: 'Metro City Glide',
                 type: 'City',
                 gears: 'Single Speed Commuter',
+                description: 'A simple, comfortable commuter bike for getting around town.',
                 status: 'available',
                 image: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=600&q=80'
             },
@@ -667,6 +760,7 @@
                 name: 'Dirt Devil BMX X',
                 type: 'BMX',
                 gears: 'Freestyle BMX Rotor',
+                description: 'A compact freestyle BMX built for fun and everyday use.',
                 status: 'maintenance',
                 image: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=600&q=80'
             },
@@ -675,6 +769,7 @@
                 name: 'Trailblazer X-treme',
                 type: 'Mountain',
                 gears: '24-Speed Suspension',
+                description: 'A trail-ready mountain bike with suspension and a wide range of gears.',
                 status: 'available',
                 image: 'https://images.unsplash.com/photo-1511994298241-608e28f14fde?auto=format&fit=crop&w=600&q=80'
             }
@@ -695,6 +790,12 @@
         let bikes = JSON.parse(localStorage.getItem('outriderz_bikes')) || defaultBikes;
         let spares = JSON.parse(localStorage.getItem('outriderz_spares')) || defaultSpares;
         let bookings = JSON.parse(localStorage.getItem('outriderz_bookings')) || defaultBookings;
+        let customers = JSON.parse(localStorage.getItem('outriderz_customers')) || [];
+        let saleBikes = JSON.parse(localStorage.getItem('outriderz_sale_bikes')) || [];
+        let editingSaleBikeId = null;
+        bikes.forEach(bike => {
+            if (!bike.description) bike.description = '';
+        });
         bookings.forEach(booking => {
             if (!booking.startedAt && booking.status === 'active') {
                 booking.startedAt = booking.createdAt || new Date().toISOString();
@@ -706,7 +807,14 @@
 
         // Initialize App on Load
         window.onload = function() {
+            const adminWorkspace = document.getElementById('admin-workspace');
+            ['view-inventory'].forEach(viewId => {
+                const section = document.getElementById(viewId);
+                section.classList.remove('hidden');
+                adminWorkspace.appendChild(section);
+            });
             renderCatalog();
+            renderSaleBikes();
             renderRentals();
             renderInventory();
             renderAdmin();
@@ -716,41 +824,58 @@
         window.setInterval(updateActiveRentalTimers, 1000);
 
         function saveState() {
-            localStorage.setItem('outriderz_bikes', JSON.stringify(bikes));
-            localStorage.setItem('outriderz_spares', JSON.stringify(spares));
-            localStorage.setItem('outriderz_bookings', JSON.stringify(bookings));
+            const state = {
+                outriderz_bikes: JSON.stringify(bikes),
+                outriderz_spares: JSON.stringify(spares),
+                outriderz_bookings: JSON.stringify(bookings),
+                outriderz_customers: JSON.stringify(customers),
+                outriderz_sale_bikes: JSON.stringify(saleBikes)
+            };
+            const estimatedBytes = Object.values(state).reduce((total, value) => total + value.length * 2, 0);
+            if (estimatedBytes > 4 * 1024 * 1024) {
+                showToast('Shop data is too large to save in this browser. Use smaller photos or remove old listings.', 'error');
+                return false;
+            }
+            try {
+                Object.entries(state).forEach(([key, value]) => localStorage.setItem(key, value));
+            } catch (error) {
+                showToast('Could not save shop data in this browser. Storage may be full; remove older photo listings and try again.', 'error');
+                return false;
+            }
             updateBadges();
             checkLowStockAlerts();
+            return true;
         }
 
         // View Switching
         function switchView(viewName) {
+            const adminSectionId = viewName === 'inventory' ? 'view-inventory' : null;
+            if (adminSectionId) viewName = 'admin';
+
+            document.getElementById('view-home').classList.add('hidden');
             document.getElementById('view-catalog').classList.add('hidden');
-            document.getElementById('view-rentals').classList.add('hidden');
-            document.getElementById('view-inventory').classList.add('hidden');
             document.getElementById('view-admin').classList.add('hidden');
 
+            document.getElementById('nav-home').className = 'px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all text-zinc-400 hover:text-white';
             document.getElementById('nav-catalog').className = 'px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all text-zinc-400 hover:text-white';
-            document.getElementById('nav-rentals').className = 'px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all text-zinc-400 hover:text-white';
-            document.getElementById('nav-inventory').className = 'px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all text-zinc-400 hover:text-white';
             document.getElementById('nav-admin').className = 'px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all text-zinc-400 hover:text-white';
 
-            if (viewName === 'catalog') {
+            if (viewName === 'home') {
+                document.getElementById('view-home').classList.remove('hidden');
+                document.getElementById('nav-home').className = 'px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all text-black bg-outriderz-yellow shadow-md';
+                renderSaleBikes();
+            } else if (viewName === 'catalog') {
                 document.getElementById('view-catalog').classList.remove('hidden');
                 document.getElementById('nav-catalog').className = 'px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all text-black bg-outriderz-yellow shadow-md';
                 renderCatalog();
-            } else if (viewName === 'rentals') {
-                document.getElementById('view-rentals').classList.remove('hidden');
-                document.getElementById('nav-rentals').className = 'px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all text-black bg-outriderz-yellow shadow-md';
-                renderRentals();
-            } else if (viewName === 'inventory') {
-                document.getElementById('view-inventory').classList.remove('hidden');
-                document.getElementById('nav-inventory').className = 'px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all text-black bg-outriderz-yellow shadow-md';
-                renderInventory();
             } else if (viewName === 'admin') {
                 document.getElementById('view-admin').classList.remove('hidden');
                 document.getElementById('nav-admin').className = 'px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all text-black bg-outriderz-yellow shadow-md';
                 renderAdmin();
+            }
+            if (adminSectionId) {
+                document.getElementById(adminSectionId).scrollIntoView({ behavior: 'smooth', block: 'start' });
+                return;
             }
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -761,10 +886,6 @@
         }
 
         function updateBadges() {
-            const activeCount = bookings.filter(b => b.status === 'active').length;
-            document.getElementById('active-badge').innerText = activeCount;
-            document.getElementById('mobile-active-badge').innerText = activeCount;
-
             const lowStockCount = spares.filter(s => s.stock <= s.threshold).length;
             const alertBadge = document.getElementById('inventory-alert-badge');
             if (lowStockCount > 0) {
@@ -807,6 +928,85 @@
             setTypeFilter('all');
         }
 
+        function escapeHTML(value) {
+            return String(value || '').replace(/[&<>"']/g, character => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            })[character]);
+        }
+
+        function readBikeImage(file) {
+            if (!file) return Promise.resolve('');
+            if (!file.type.startsWith('image/')) return Promise.reject(new Error('Choose an image file for the bike photo.'));
+            if (file.size > 8 * 1024 * 1024) return Promise.reject(new Error('Choose an image smaller than 8 MB.'));
+
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onerror = () => reject(new Error('The selected image could not be read.'));
+                reader.onload = () => {
+                    const image = new Image();
+                    image.onerror = () => reject(new Error('The selected file is not a valid image.'));
+                    image.onload = () => {
+                        const scale = Math.min(1, 1000 / Math.max(image.naturalWidth, image.naturalHeight));
+                        const canvas = document.createElement('canvas');
+                        canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+                        canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+                        const context = canvas.getContext('2d');
+                        if (!context) {
+                            reject(new Error('Your browser could not process the selected image.'));
+                            return;
+                        }
+                        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.72);
+                        if (dataUrl.length > 700000) {
+                            reject(new Error('This photo is too large to save in the browser demo. Choose a smaller image.'));
+                            return;
+                        }
+                        resolve(dataUrl);
+                    };
+                    image.src = reader.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function previewBikeImage(event) {
+            const file = event.target.files[0];
+            const preview = document.getElementById('new-bike-image-preview');
+            if (!file) {
+                preview.src = '';
+                preview.classList.add('hidden');
+                return;
+            }
+            readBikeImage(file).then(image => {
+                preview.src = image;
+                preview.classList.remove('hidden');
+            }).catch(error => {
+                event.target.value = '';
+                preview.src = '';
+                preview.classList.add('hidden');
+                showToast(error.message, 'error');
+            });
+        }
+
+        function previewSaleBikeImage(event) {
+            const file = event.target.files[0];
+            const preview = document.getElementById('sale-bike-image-preview');
+            if (!file) return;
+            readBikeImage(file).then(image => {
+                preview.src = image;
+                preview.classList.remove('hidden');
+            }).catch(error => {
+                event.target.value = '';
+                preview.src = '';
+                preview.classList.add('hidden');
+                showToast(error.message, 'error');
+            });
+        }
+
         function renderCatalog() {
             const searchQuery = document.getElementById('search-input').value.toLowerCase();
             const statusFilter = document.getElementById('status-filter').value;
@@ -841,20 +1041,21 @@
                 card.className = 'bg-zinc-950 rounded-3xl border border-zinc-800 overflow-hidden shadow-xl hover:border-outriderz-yellow/50 transition-all flex flex-col justify-between group';
                 card.innerHTML = `
                     <div class="relative h-56 bg-zinc-900 overflow-hidden">
-                        <img src="${bike.image}" alt="${bike.name}" onerror="this.src='https://placehold.co/600x400/18181b/facc15?text=Outriderz+Standard'" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <img src="${escapeHTML(bike.image || 'https://placehold.co/600x400/18181b/facc15?text=Outriderz+Standard')}" alt="${escapeHTML(bike.name)}" onerror="this.src='https://placehold.co/600x400/18181b/facc15?text=Outriderz+Standard'" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                         <div class="absolute top-3 left-3">
                             ${statusBadge}
                         </div>
                         <div class="absolute top-3 right-3 bg-black/80 backdrop-blur-md text-outriderz-yellow text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full border border-zinc-800">
-                            ${bike.type}
+                            ${escapeHTML(bike.type)}
                         </div>
                     </div>
                     <div class="p-6 space-y-5 flex-grow flex flex-col justify-between">
                         <div>
                             <div class="flex items-center justify-between mb-1">
-                                <h3 class="font-black text-lg text-white uppercase tracking-wide">${bike.name}</h3>
+                                <h3 class="font-black text-lg text-white uppercase tracking-wide">${escapeHTML(bike.name)}</h3>
                             </div>
-                            <p class="text-xs text-zinc-400 font-semibold flex items-center mt-1"><i class="fa-solid fa-gears mr-1.5 text-outriderz-yellow"></i>${bike.gears}</p>
+                            <p class="text-xs text-zinc-400 font-semibold flex items-center mt-1"><i class="fa-solid fa-gears mr-1.5 text-outriderz-yellow"></i>${escapeHTML(bike.gears)}</p>
+                            ${bike.description ? `<p class="text-sm text-zinc-400 leading-relaxed mt-3">${escapeHTML(bike.description)}</p>` : ''}
                             
                             <div class="mt-4 pt-4 border-t border-zinc-800 flex items-center justify-between">
                                 <div>
@@ -884,14 +1085,58 @@
             });
         }
 
+        function renderSaleBikes() {
+            const grid = document.getElementById('sale-bikes-grid');
+            const emptyMessage = document.getElementById('no-sale-bikes-message');
+            grid.innerHTML = '';
+            emptyMessage.classList.toggle('hidden', saleBikes.length > 0);
+
+            saleBikes.forEach(bike => {
+                const card = document.createElement('article');
+                card.className = 'overflow-hidden rounded-2xl border border-zinc-800 bg-white shadow-lg';
+                card.innerHTML = `
+                    <img src="${escapeHTML(bike.image)}" alt="${escapeHTML(bike.name)}" onerror="this.src='https://placehold.co/600x400/18181b/facc15?text=Bike+Photo'" class="h-56 w-full object-cover">
+                    <div class="p-5 space-y-3">
+                        <div class="flex items-start justify-between gap-3">
+                            <h3 class="font-black uppercase text-lg text-white">${escapeHTML(bike.name)}</h3>
+                            <span class="shrink-0 font-black text-outriderz-red">${Number(bike.price).toLocaleString()} KES</span>
+                        </div>
+                        <p class="text-sm text-zinc-400 leading-relaxed">${escapeHTML(bike.description)}</p>
+                        <a href="https://wa.me/254700425515?text=${encodeURIComponent(`Hello, I am interested in the ${bike.name} listed for ${Number(bike.price).toLocaleString()} KES.`)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-black uppercase text-white">
+                            <i class="fa-brands fa-whatsapp text-base"></i> Enquire on WhatsApp
+                        </a>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
         // Booking Modal (1 KES / Minute)
         function openBookingModal(bikeId) {
             const bike = bikes.find(b => b.id === bikeId);
-            if (!bike) return;
+            if (!bike || bike.status !== 'available') {
+                showToast('This bicycle is no longer available to hire.', 'error');
+                return;
+            }
 
+            document.getElementById('booking-form').reset();
             document.getElementById('modal-bike-id').value = bike.id;
-            document.getElementById('modal-bike-title').innerText = `Hire ${bike.name}`;
+            document.getElementById('customer-bike-picker').classList.add('hidden');
+            document.getElementById('customer-bike-id').required = false;
+            document.getElementById('modal-bike-title').innerText = `Add Customer · ${bike.name}`;
 
+            document.getElementById('booking-modal').classList.remove('hidden');
+            document.getElementById('booking-modal').classList.add('flex');
+        }
+
+        function openAddCustomerModal() {
+            document.getElementById('booking-form').reset();
+            document.getElementById('modal-bike-id').value = '';
+            document.getElementById('customer-bike-picker').classList.add('hidden');
+            document.getElementById('customer-bike-id').required = false;
+            document.getElementById('hire-rate-info').classList.remove('hidden');
+            document.getElementById('booking-submit-button').innerHTML = '<i class="fa-solid fa-play mr-2"></i> Add Customer & Start Timer';
+            document.getElementById('modal-bike-title').innerText = 'Add Customer';
             document.getElementById('booking-modal').classList.remove('hidden');
             document.getElementById('booking-modal').classList.add('flex');
         }
@@ -903,35 +1148,68 @@
 
         function handleBookingSubmit(event) {
             event.preventDefault();
-            const bikeId = document.getElementById('modal-bike-id').value;
-            const bike = bikes.find(b => b.id === bikeId);
-            if (!bike || bike.status !== 'available') {
+            const customerName = document.getElementById('customer-name').value.trim();
+            const customerId = document.getElementById('customer-id').value.trim();
+            if (!customerName) {
+                showToast('Enter the customer name before starting the hire.', 'error');
+                return;
+            }
+            if (!customerId) {
+                showToast('Enter the customer ID or admission number before starting the hire.', 'error');
+                return;
+            }
+
+            const normalizedCustomerId = customerId.toLowerCase();
+            const existingCustomer = customers.find(customer => String(customer.customerId || '').toLowerCase() === normalizedCustomerId);
+            if (bookings.some(booking => booking.status === 'active' && String(booking.customerId || '').toLowerCase() === normalizedCustomerId)) {
+                showToast('This customer already has an active hire.', 'error');
+                return;
+            }
+
+            const bikeId = document.getElementById('modal-bike-id').value || document.getElementById('customer-bike-id').value;
+            const bike = bikeId ? bikes.find(b => b.id === bikeId) : null;
+            if (bikeId && (!bike || bike.status !== 'available')) {
                 showToast('This bicycle is no longer available to hire.', 'error');
                 closeBookingModal();
                 renderCatalog();
                 return;
             }
 
-            const location = document.getElementById('pickup-location').value;
             const startedAt = new Date().toISOString();
 
             const newBooking = {
-                id: `OR-${Math.floor(1000 + Math.random() * 9000)}`,
-                bikeId: bike.id,
-                bikeName: bike.name,
-                location: location,
+                id: `OR-${Date.now()}`,
+                bikeId: bike ? bike.id : '',
+                bikeName: bike ? bike.name : '',
+                customerName,
+                customerId,
+                location: 'Outriders Bike Shop',
                 startedAt: startedAt,
                 totalPrice: 0,
                 status: 'active',
                 createdAt: startedAt
             };
 
+            const previousCustomerName = existingCustomer ? existingCustomer.name : null;
+            if (existingCustomer) {
+                existingCustomer.name = customerName;
+            } else {
+                customers.unshift({ id: `customer-${Date.now()}`, name: customerName, customerId });
+            }
             bookings.unshift(newBooking);
-            bike.status = 'rented';
+            if (bike) bike.status = 'rented';
 
-            saveState();
+            if (!saveState()) {
+                bookings.shift();
+                if (bike) bike.status = 'available';
+                if (existingCustomer) existingCustomer.name = previousCustomerName;
+                else customers.shift();
+                return;
+            }
+            document.getElementById('customer-bike-picker').classList.add('hidden');
+            document.getElementById('customer-bike-id').required = false;
             closeBookingModal();
-            showToast(`${bike.name} hire started. Timer is running at 1 KES per completed minute.`, 'success');
+            showToast(`${customerName}'s hire timer started at 1 KES per completed minute.`, 'success');
             renderCatalog();
             renderRentals();
             renderAdmin();
@@ -989,6 +1267,8 @@
                                 ${badge}
                             </div>
                             <h4 class="text-lg font-black uppercase text-white tracking-wide">${booking.bikeName}</h4>
+                            <p class="text-xs font-bold text-white"><i class="fa-solid fa-user mr-1.5 text-outriderz-yellow"></i>${escapeHTML(booking.customerName || 'Customer not recorded')}</p>
+                            ${booking.customerId ? `<p class="text-xs text-zinc-400"><i class="fa-solid fa-id-card mr-1.5 text-outriderz-yellow"></i>ID / Admission: ${escapeHTML(booking.customerId)}</p>` : ''}
                             <p class="text-xs text-zinc-400 font-semibold"><i class="fa-solid fa-location-dot mr-1.5 text-outriderz-red"></i>${booking.location}</p>
                             <p class="text-xs text-zinc-500"><i class="fa-regular fa-clock mr-1.5"></i> Started at: ${startedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                             <p class="text-xs font-bold text-outriderz-yellow"><i class="fa-solid fa-stopwatch mr-1.5"></i> Elapsed: <span data-rental-elapsed="${booking.id}">${elapsedDisplay}</span></p>
@@ -1219,10 +1499,10 @@
                 tr.className = 'hover:bg-zinc-900/50 transition-all';
                 tr.innerHTML = `
                     <td class="py-4 px-4 flex items-center space-x-4">
-                        <img src="${bike.image}" class="w-12 h-12 rounded-xl object-cover bg-zinc-900 border border-zinc-800" onerror="this.src='https://placehold.co/100x100'">
+                        <img src="${escapeHTML(bike.image)}" class="w-12 h-12 rounded-xl object-cover bg-zinc-900 border border-zinc-800" onerror="this.src='https://placehold.co/100x100'">
                         <div>
-                            <p class="font-black text-white uppercase text-sm">${bike.name}</p>
-                            <p class="text-xs text-zinc-500">${bike.gears}</p>
+                            <p class="font-black text-white uppercase text-sm">${escapeHTML(bike.name)}</p>
+                            <p class="text-xs text-zinc-500">${escapeHTML(bike.gears)}</p>
                         </div>
                     </td>
                     <td class="py-4 px-4 font-bold text-zinc-300">${bike.type}</td>
@@ -1231,7 +1511,7 @@
                     <td class="py-4 px-4 text-right space-x-2">
                         ${bike.status === 'available' ? `
                             <button onclick="openBookingModal('${bike.id}')" class="px-3 py-2 bg-outriderz-yellow hover:bg-outriderz-yellowDark text-black rounded-xl text-[10px] font-black uppercase tracking-wider transition-all">
-                                <i class="fa-solid fa-play mr-1"></i> Start Hire
+                                <i class="fa-solid fa-user-plus mr-1"></i> Add Customer
                             </button>
                             <button onclick="toggleBikeStatusAdmin('${bike.id}')" title="Mark for maintenance" class="p-2.5 bg-zinc-900 hover:bg-zinc-800 text-outriderz-yellow rounded-xl transition-all border border-zinc-800">
                                 <i class="fa-solid fa-wrench text-xs"></i>
@@ -1241,12 +1521,37 @@
                                 <i class="fa-solid fa-wrench text-xs"></i>
                             </button>
                         ` : '<span class="text-[10px] font-black uppercase text-outriderz-red">Hire in progress</span>'}
+                        <button onclick="editBike('${bike.id}')" title="Edit bike details, description, and photo" class="p-2.5 bg-zinc-900 hover:bg-zinc-800 text-outriderz-yellow rounded-xl transition-all border border-zinc-800">
+                            <i class="fa-solid fa-pen text-xs"></i>
+                        </button>
                         <button onclick="deleteBike('${bike.id}')" title="Delete Bike" class="p-2.5 bg-zinc-900 hover:bg-zinc-800 text-outriderz-red rounded-xl transition-all border border-zinc-800">
                             <i class="fa-solid fa-trash text-xs"></i>
                         </button>
                     </td>
                 `;
                 fleetTable.appendChild(tr);
+            });
+
+            const saleBikeList = document.getElementById('admin-sale-bikes-list');
+            const noSaleBikes = document.getElementById('admin-no-sale-bikes-message');
+            saleBikeList.innerHTML = '';
+            noSaleBikes.classList.toggle('hidden', saleBikes.length > 0);
+            saleBikes.forEach(bike => {
+                const item = document.createElement('article');
+                item.className = 'rounded-2xl border border-zinc-800 bg-white p-4 flex gap-4';
+                item.innerHTML = `
+                    <img src="${escapeHTML(bike.image)}" alt="" onerror="this.src='https://placehold.co/120x120'" class="w-20 h-20 rounded-xl object-cover">
+                    <div class="min-w-0 flex-1">
+                        <h4 class="font-black text-sm uppercase text-white">${escapeHTML(bike.name)}</h4>
+                        <p class="text-xs font-bold text-outriderz-red mt-1">${Number(bike.price).toLocaleString()} KES</p>
+                        <p class="text-xs text-zinc-400 mt-2 line-clamp-2">${escapeHTML(bike.description)}</p>
+                        <div class="flex gap-2 mt-3">
+                            <button onclick="editSaleBike('${bike.id}')" class="px-3 py-1.5 rounded-lg bg-outriderz-yellow text-black text-[10px] font-black uppercase">Edit</button>
+                            <button onclick="deleteSaleBike('${bike.id}')" class="px-3 py-1.5 rounded-lg border border-outriderz-red text-outriderz-red text-[10px] font-black uppercase">Remove</button>
+                        </div>
+                    </div>
+                `;
+                saleBikeList.appendChild(item);
             });
 
             const bookingsList = document.getElementById('admin-bookings-list');
@@ -1267,6 +1572,8 @@
                         <span class="text-xs font-black text-white"><span data-admin-rental-cost="${booking.id}">${amount}</span> KES</span>
                     </div>
                     <p class="font-black text-sm text-white uppercase">${booking.bikeName}</p>
+                    <p class="text-xs font-bold text-white"><i class="fa-solid fa-user mr-1 text-outriderz-yellow"></i>${escapeHTML(booking.customerName || 'Customer not recorded')}</p>
+                    ${booking.customerId ? `<p class="text-xs text-zinc-400"><i class="fa-solid fa-id-card mr-1 text-outriderz-yellow"></i>ID / Admission: ${escapeHTML(booking.customerId)}</p>` : ''}
                     <p class="text-xs text-zinc-400 font-semibold"><i class="fa-solid fa-location-dot mr-1 text-outriderz-red"></i>${booking.location}</p>
                     <div class="flex items-center justify-between text-[11px] text-zinc-500 pt-2 border-t border-zinc-800">
                         <span>${booking.status === 'active' ? 'Elapsed:' : 'Ride time:'} <span data-admin-rental-elapsed="${booking.id}">${formatElapsedTime(elapsedMilliseconds)}</span></span>
@@ -1310,11 +1617,41 @@
             saveState();
             renderAdmin();
             renderCatalog();
-            showToast('Standard bicycle removed.', 'info');
+            showToast('Bike removed from the shop.', 'info');
         }
 
         // Add Standard Bike
         function openAddBikeModal() {
+            document.getElementById('add-bike-form').reset();
+            document.getElementById('edit-bike-id').value = '';
+            document.getElementById('new-bike-image').required = true;
+            document.getElementById('new-bike-image-preview').classList.add('hidden');
+            document.getElementById('new-bike-image-preview').src = '';
+            document.querySelector('#add-bike-modal h3').innerText = 'Add Bike';
+            document.getElementById('save-bike-button').innerText = 'Save Bike';
+            document.getElementById('add-bike-modal').classList.remove('hidden');
+            document.getElementById('add-bike-modal').classList.add('flex');
+        }
+
+        function editBike(bikeId) {
+            const bike = bikes.find(item => item.id === bikeId);
+            if (!bike) return;
+            if (bookings.some(booking => booking.bikeId === bikeId && booking.status === 'active')) {
+                showToast('Return or cancel the active hire before editing this bike.', 'error');
+                return;
+            }
+            document.getElementById('edit-bike-id').value = bike.id;
+            document.getElementById('new-bike-name').value = bike.name;
+            document.getElementById('new-bike-type').value = bike.type;
+            document.getElementById('new-bike-gears').value = bike.gears;
+            document.getElementById('new-bike-description').value = bike.description || '';
+            document.getElementById('new-bike-image').value = '';
+            document.getElementById('new-bike-image').required = false;
+            document.querySelector('#add-bike-modal h3').innerText = 'Edit Bike';
+            document.getElementById('save-bike-button').innerText = 'Save Changes';
+            const preview = document.getElementById('new-bike-image-preview');
+            preview.src = bike.image || '';
+            preview.classList.toggle('hidden', !bike.image);
             document.getElementById('add-bike-modal').classList.remove('hidden');
             document.getElementById('add-bike-modal').classList.add('flex');
         }
@@ -1324,29 +1661,146 @@
             document.getElementById('add-bike-modal').classList.remove('flex');
         }
 
-        function handleAddNewBike(event) {
+        async function handleAddNewBike(event) {
             event.preventDefault();
-            const name = document.getElementById('new-bike-name').value;
-            const type = document.getElementById('new-bike-type').value;
-            const gears = document.getElementById('new-bike-gears').value;
-            const image = 'https://placehold.co/600x400/18181b/facc15?text=Outriderz+Standard';
+            const form = document.getElementById('add-bike-form');
+            const bikeId = document.getElementById('edit-bike-id').value;
+            const existingBike = bikeId ? bikes.find(bike => bike.id === bikeId) : null;
+            const file = document.getElementById('new-bike-image').files[0];
+            if (!existingBike && !file) {
+                showToast('Choose a photo of the bike before adding it.', 'error');
+                return;
+            }
+            const submitButton = document.getElementById('save-bike-button');
+            submitButton.disabled = true;
+            try {
+                const image = file ? await readBikeImage(file) : existingBike.image;
+                const name = document.getElementById('new-bike-name').value.trim();
+                const updatedBike = {
+                    ...(existingBike || {}),
+                    id: existingBike ? existingBike.id : `bike-${Date.now()}`,
+                    name,
+                    type: document.getElementById('new-bike-type').value,
+                    gears: document.getElementById('new-bike-gears').value.trim(),
+                    description: document.getElementById('new-bike-description').value.trim(),
+                    status: existingBike ? existingBike.status : 'available',
+                    image
+                };
+                if (existingBike) {
+                    const oldBike = { ...existingBike };
+                    Object.assign(existingBike, updatedBike);
+                    if (!saveState()) {
+                        Object.assign(existingBike, oldBike);
+                        return;
+                    }
+                } else {
+                    bikes.push(updatedBike);
+                    if (!saveState()) {
+                        bikes.pop();
+                        return;
+                    }
+                }
+                closeAddBikeModal();
+                form.reset();
+                renderCatalog();
+                renderAdmin();
+                showToast(`${name} ${existingBike ? 'updated' : 'added'} in Outriders Bike Shop.`, 'success');
+            } catch (error) {
+                showToast(error.message || 'The bike photo could not be processed.', 'error');
+            } finally {
+                submitButton.disabled = false;
+            }
+        }
 
-            const newBike = {
-                id: `bike-${Date.now()}`,
-                name,
-                type,
-                gears,
-                status: 'available',
-                image
-            };
+        function openSaleBikeModal() {
+            document.getElementById('sale-bike-form').reset();
+            document.getElementById('edit-sale-bike-id').value = '';
+            document.getElementById('sale-bike-image-preview').classList.add('hidden');
+            document.getElementById('sale-bike-image-preview').src = '';
+            document.getElementById('sale-bike-image').required = true;
+            document.getElementById('save-sale-bike-button').innerText = 'Publish Sale Bike';
+            document.getElementById('sale-bike-modal').classList.remove('hidden');
+            document.getElementById('sale-bike-modal').classList.add('flex');
+        }
 
-            bikes.push(newBike);
-            saveState();
-            closeAddBikeModal();
-            document.getElementById('add-bike-form').reset();
-            renderCatalog();
+        function closeSaleBikeModal() {
+            document.getElementById('sale-bike-modal').classList.add('hidden');
+            document.getElementById('sale-bike-modal').classList.remove('flex');
+        }
+
+        function editSaleBike(bikeId) {
+            const bike = saleBikes.find(item => item.id === bikeId);
+            if (!bike) return;
+            document.getElementById('edit-sale-bike-id').value = bike.id;
+            document.getElementById('sale-bike-name').value = bike.name;
+            document.getElementById('sale-bike-description').value = bike.description;
+            document.getElementById('sale-bike-price').value = bike.price;
+            document.getElementById('sale-bike-image').value = '';
+            document.getElementById('sale-bike-image').required = false;
+            const preview = document.getElementById('sale-bike-image-preview');
+            preview.src = bike.image;
+            preview.classList.remove('hidden');
+            document.getElementById('save-sale-bike-button').innerText = 'Save Changes';
+            document.getElementById('sale-bike-modal').classList.remove('hidden');
+            document.getElementById('sale-bike-modal').classList.add('flex');
+        }
+
+        async function handleAddSaleBike(event) {
+            event.preventDefault();
+            const bikeId = document.getElementById('edit-sale-bike-id').value;
+            const existingBike = bikeId ? saleBikes.find(bike => bike.id === bikeId) : null;
+            const file = document.getElementById('sale-bike-image').files[0];
+            if (!existingBike && !file) {
+                showToast('Choose a photo of the bike for sale.', 'error');
+                return;
+            }
+            const submitButton = document.getElementById('save-sale-bike-button');
+            submitButton.disabled = true;
+            try {
+                const image = file ? await readBikeImage(file) : existingBike.image;
+                const name = document.getElementById('sale-bike-name').value.trim();
+                const nextBike = {
+                    ...(existingBike || {}),
+                    id: existingBike ? existingBike.id : `sale-${Date.now()}`,
+                    name,
+                    description: document.getElementById('sale-bike-description').value.trim(),
+                    price: Number(document.getElementById('sale-bike-price').value),
+                    image
+                };
+                if (!Number.isFinite(nextBike.price) || nextBike.price <= 0) {
+                    showToast('Enter a valid sale price greater than zero.', 'error');
+                    return;
+                }
+                const oldBike = existingBike ? { ...existingBike } : null;
+                if (existingBike) Object.assign(existingBike, nextBike);
+                else saleBikes.push(nextBike);
+                if (!saveState()) {
+                    if (existingBike) Object.assign(existingBike, oldBike);
+                    else saleBikes.pop();
+                    return;
+                }
+                closeSaleBikeModal();
+                renderSaleBikes();
+                renderAdmin();
+                showToast(`${name} ${existingBike ? 'updated' : 'listed'} for sale.`, 'success');
+            } catch (error) {
+                showToast(error.message || 'The sale bike photo could not be processed.', 'error');
+            } finally {
+                submitButton.disabled = false;
+            }
+        }
+
+        function deleteSaleBike(bikeId) {
+            const index = saleBikes.findIndex(bike => bike.id === bikeId);
+            if (index < 0) return;
+            const [removedBike] = saleBikes.splice(index, 1);
+            if (!saveState()) {
+                saleBikes.splice(index, 0, removedBike);
+                return;
+            }
+            renderSaleBikes();
             renderAdmin();
-            showToast(`Added ${name} to standard fleet!`, 'success');
+            showToast(`${removedBike.name} removed from sale listings.`, 'info');
         }
 
         // Custom Toast Notification System
