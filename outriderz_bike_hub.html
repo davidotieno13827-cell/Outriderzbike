@@ -7,6 +7,8 @@
     <link rel="icon" type="image/jpeg" href="outriderz-logo.jpe">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts: Inter -->
@@ -146,8 +148,8 @@
                         <i class="fa-solid fa-user-gear"></i>
                     </div>
                     <div class="text-left">
-                        <p class="text-xs font-black text-white uppercase tracking-wider">Hub Manager</p>
-                        <p class="text-[10px] text-outriderz-yellow font-bold flex items-center"><span class="w-2 h-2 rounded-full bg-outriderz-yellow mr-1.5 inline-block animate-pulse"></span>KES Billing Active</p>
+                        <p class="text-xs font-black text-white uppercase tracking-wider">Public Shop</p>
+                        <p class="text-[10px] text-outriderz-yellow font-bold flex items-center"><span class="w-2 h-2 rounded-full bg-outriderz-yellow mr-1.5 inline-block"></span>Admin sign-in required</p>
                     </div>
                 </div>
                 <!-- Mobile menu button -->
@@ -399,7 +401,27 @@
 
         <!-- VIEW 4: ADMIN DASHBOARD -->
         <section id="view-admin" class="hidden space-y-8 fade-in">
-            <div class="grid grid-cols-1 gap-4">
+            <div id="admin-login-panel" class="mx-auto max-w-lg space-y-5 rounded-3xl border border-zinc-800 bg-outriderz-zinc900 p-6 sm:p-8">
+                <div>
+                    <p class="text-xs font-black uppercase tracking-widest text-outriderz-red">Owner access</p>
+                    <h2 class="mt-2 text-2xl font-black uppercase text-white">Admin sign in</h2>
+                    <p id="backend-status-message" class="mt-2 text-sm text-zinc-400">Connect the shop to Supabase to enable secure shared updates.</p>
+                </div>
+                <form id="admin-login-form" onsubmit="handleAdminSignIn(event)" class="space-y-4">
+                    <label class="block text-xs font-black uppercase tracking-wider text-outriderz-yellow">
+                        Email
+                        <input id="admin-email" type="email" autocomplete="username" required class="mt-2 w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm font-semibold text-white">
+                    </label>
+                    <label class="block text-xs font-black uppercase tracking-wider text-outriderz-yellow">
+                        Password
+                        <input id="admin-password" type="password" autocomplete="current-password" required class="mt-2 w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm font-semibold text-white">
+                    </label>
+                    <button id="admin-login-button" type="submit" class="w-full rounded-2xl bg-outriderz-yellow px-5 py-3 font-black uppercase tracking-wider text-black disabled:cursor-not-allowed disabled:opacity-50">
+                        Sign in to Admin
+                    </button>
+                </form>
+            </div>
+            <div id="admin-inventory-shortcut" class="hidden grid grid-cols-1 gap-4">
                 <a href="#view-inventory" onclick="switchView('inventory')" class="flex items-center justify-between gap-4 rounded-2xl border border-zinc-800 bg-outriderz-zinc900 p-5 hover:border-outriderz-yellow transition-colors">
                     <span class="flex items-center gap-3">
                         <i class="fa-solid fa-boxes-stacked text-outriderz-yellow text-xl"></i>
@@ -409,7 +431,10 @@
                 </a>
             </div>
             <!-- Stats Grid -->
-            <div id="admin-overview" class="space-y-8">
+            <div id="admin-overview" class="hidden space-y-8">
+            <div class="flex justify-end">
+                <button onclick="handleAdminSignOut()" class="rounded-xl border border-zinc-700 px-4 py-2 text-xs font-black uppercase text-zinc-300 hover:border-outriderz-red hover:text-white">Sign out</button>
+            </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div class="bg-outriderz-zinc900 p-6 rounded-3xl border border-zinc-800 shadow-xl flex items-center space-x-5">
                     <div class="w-16 h-16 bg-zinc-950 text-outriderz-yellow border border-zinc-800 rounded-2xl flex items-center justify-center text-2xl shadow-inner">
@@ -486,7 +511,7 @@
             </div>
 
             <div class="bg-outriderz-zinc900 rounded-3xl p-6 sm:p-8 shadow-xl border border-zinc-800 space-y-6">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-zinc-800">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-zinc-800">
                         <div>
                             <h3 class="text-xl font-black uppercase text-white tracking-wider">Bikes for Sale</h3>
                             <p class="text-xs text-zinc-400 mt-1">Manage the bikes shown in the public shop's sale section.</p>
@@ -497,10 +522,10 @@
                     </div>
                     <div id="admin-sale-bikes-list" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
                     <p id="admin-no-sale-bikes-message" class="hidden text-sm text-zinc-500 text-center py-6">No sale bikes yet. Add one to show it on the home page.</p>
-                    <p class="text-xs text-amber-700">Demo limitation: photos and listings are saved only in this browser. They will not be shared with visitors until the shop is connected to a backend.</p>
+                    <p class="text-xs text-zinc-400">Photos and listings are stored centrally and appear on the public home page.</p>
             </div>
             </div>
-            <div id="admin-workspace" class="space-y-8"></div>
+            <div id="admin-workspace" class="hidden space-y-8"></div>
         </section>
 
     </main>
@@ -599,8 +624,8 @@
                 </div>
                 <div>
                     <label class="block text-xs font-black text-outriderz-yellow uppercase tracking-wider mb-2">Bike Photo</label>
-                    <input type="file" id="new-bike-image" accept="image/*" onchange="previewBikeImage(event)" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-sm text-zinc-400 file:mr-3 file:rounded-lg file:border-0 file:bg-outriderz-yellow file:px-3 file:py-2 file:font-bold file:text-black">
-                    <p class="text-[11px] text-zinc-500 mt-2">Upload a clear photo of the actual bike. The image is resized for this browser demo.</p>
+                    <input type="file" id="new-bike-image" accept="image/*" capture="environment" onchange="previewBikeImage(event)" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-sm text-zinc-400 file:mr-3 file:rounded-lg file:border-0 file:bg-outriderz-yellow file:px-3 file:py-2 file:font-bold file:text-black">
+                    <p class="text-[11px] text-zinc-500 mt-2">Take a photo or choose one from this device. Published photos are stored online for the website.</p>
                     <img id="new-bike-image-preview" alt="Bike photo preview" class="hidden mt-3 h-36 w-full rounded-xl object-cover border border-zinc-800">
                 </div>
                 <div class="pt-2">
@@ -637,7 +662,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-black text-outriderz-yellow uppercase tracking-wider mb-2">Actual Bike Photo</label>
-                    <input id="sale-bike-image" type="file" accept="image/*" onchange="previewSaleBikeImage(event)" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-sm text-zinc-400 file:mr-3 file:rounded-lg file:border-0 file:bg-outriderz-yellow file:px-3 file:py-2 file:font-bold file:text-black">
+                    <input id="sale-bike-image" type="file" accept="image/*" capture="environment" onchange="previewSaleBikeImage(event)" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-sm text-zinc-400 file:mr-3 file:rounded-lg file:border-0 file:bg-outriderz-yellow file:px-3 file:py-2 file:font-bold file:text-black">
                     <img id="sale-bike-image-preview" alt="Sale bike photo preview" class="hidden mt-3 h-36 w-full rounded-xl object-cover border border-zinc-800">
                 </div>
                 <button id="save-sale-bike-button" type="submit" class="w-full py-4 bg-outriderz-yellow hover:bg-outriderz-yellowDark text-black font-black uppercase text-sm tracking-wider rounded-2xl">Publish Sale Bike</button>
@@ -787,32 +812,51 @@
 
         const defaultBookings = [];
 
-        let bikes = JSON.parse(localStorage.getItem('outriderz_bikes')) || defaultBikes;
-        let spares = JSON.parse(localStorage.getItem('outriderz_spares')) || defaultSpares;
-        let bookings = JSON.parse(localStorage.getItem('outriderz_bookings')) || defaultBookings;
-        let customers = JSON.parse(localStorage.getItem('outriderz_customers')) || [];
-        let saleBikes = JSON.parse(localStorage.getItem('outriderz_sale_bikes')) || [];
-        let editingSaleBikeId = null;
+        function readLocalCollection(key, fallback) {
+            try {
+                const saved = localStorage.getItem(key);
+                return saved ? JSON.parse(saved) : fallback;
+            } catch (error) {
+                console.error(`Could not read the saved ${key} cache.`, error);
+                return fallback;
+            }
+        }
+
+        const legacyState = {
+            bikes: readLocalCollection('outriderz_bikes', defaultBikes),
+            spares: readLocalCollection('outriderz_spares', defaultSpares),
+            bookings: readLocalCollection('outriderz_bookings', defaultBookings),
+            customers: readLocalCollection('outriderz_customers', []),
+            sale_bikes: readLocalCollection('outriderz_sale_bikes', []),
+        };
+
+        let bikes = legacyState.bikes;
+        let spares = legacyState.spares;
+        let bookings = [];
+        let customers = [];
+        let saleBikes = legacyState.sale_bikes;
+        let supabaseClient = null;
+        let currentAdminUser = null;
+        const collectionNames = ['bikes', 'spares', 'bookings', 'customers', 'sale_bikes'];
+        const publicCollections = new Set(['bikes', 'sale_bikes']);
+        const cloudSnapshots = Object.fromEntries(collectionNames.map(name => [name, []]));
+        let initializedCollections = new Set();
         bikes.forEach(bike => {
             if (!bike.description) bike.description = '';
-        });
-        bookings.forEach(booking => {
-            if (!booking.startedAt && booking.status === 'active') {
-                booking.startedAt = booking.createdAt || new Date().toISOString();
-            }
         });
 
         let currentTypeFilter = 'all';
         let currentRentalsTab = 'all';
 
         // Initialize App on Load
-        window.onload = function() {
+        window.onload = async function() {
             const adminWorkspace = document.getElementById('admin-workspace');
             ['view-inventory'].forEach(viewId => {
                 const section = document.getElementById(viewId);
                 section.classList.remove('hidden');
                 adminWorkspace.appendChild(section);
             });
+            await initializeCloud();
             renderCatalog();
             renderSaleBikes();
             renderRentals();
@@ -823,28 +867,297 @@
         };
         window.setInterval(updateActiveRentalTimers, 1000);
 
-        function saveState() {
-            const state = {
-                outriderz_bikes: JSON.stringify(bikes),
-                outriderz_spares: JSON.stringify(spares),
-                outriderz_bookings: JSON.stringify(bookings),
-                outriderz_customers: JSON.stringify(customers),
-                outriderz_sale_bikes: JSON.stringify(saleBikes)
-            };
-            const estimatedBytes = Object.values(state).reduce((total, value) => total + value.length * 2, 0);
-            if (estimatedBytes > 4 * 1024 * 1024) {
-                showToast('Shop data is too large to save in this browser. Use smaller photos or remove old listings.', 'error');
+        function getCollection(name) {
+            return ({
+                bikes,
+                spares,
+                bookings,
+                customers,
+                sale_bikes: saleBikes
+            })[name];
+        }
+
+        function setCollection(name, value) {
+            if (name === 'bikes') bikes = value;
+            else if (name === 'spares') spares = value;
+            else if (name === 'bookings') bookings = value;
+            else if (name === 'customers') customers = value;
+            else if (name === 'sale_bikes') saleBikes = value;
+        }
+
+        function isSupabaseConfigured() {
+            const config = window.OUTRIDERS_SUPABASE_CONFIG || {};
+            return Boolean(config.url && config.anonKey && !config.url.includes('YOUR_') && !config.anonKey.includes('YOUR_'));
+        }
+
+        async function initializeCloud() {
+            const status = document.getElementById('backend-status-message');
+            const loginButton = document.getElementById('admin-login-button');
+            updateAdminAccess();
+            if (!isSupabaseConfigured()) {
+                status.innerText = 'Supabase is not configured yet. Add the project URL and public anon key to supabase-config.js, then run supabase-setup.sql in the Supabase SQL Editor.';
+                loginButton.disabled = true;
+                document.getElementById('admin-login-form').classList.add('hidden');
+                return;
+            }
+            if (!window.supabase) {
+                status.innerText = 'The Supabase client did not load. Check your internet connection, then reload the page.';
+                loginButton.disabled = true;
+                return;
+            }
+
+            const config = window.OUTRIDERS_SUPABASE_CONFIG;
+            try {
+                supabaseClient = window.supabase.createClient(config.url, config.anonKey);
+                supabaseClient.auth.onAuthStateChange(event => {
+                    if (event === 'SIGNED_OUT') {
+                        currentAdminUser = null;
+                        bookings = [];
+                        customers = [];
+                        updateAdminAccess();
+                    }
+                });
+                await loadCloudCollections(false);
+                const { data, error } = await supabaseClient.auth.getSession();
+                if (error) throw error;
+                if (data.session) await activateAdminSession(data.session.user);
+                status.innerText = 'Sign in with the administrator account to manage shared shop content.';
+                loginButton.disabled = false;
+                startShopRealtime();
+            } catch (error) {
+                console.error('Supabase initialization failed.', error);
+                status.innerText = `Could not connect to Supabase: ${error.message}`;
+                loginButton.disabled = false;
+            }
+        }
+
+        async function loadCloudCollections(includePrivate) {
+            const { data, error } = await supabaseClient
+                .from('shop_content')
+                .select('collection,id,data');
+            if (error) throw error;
+
+            const grouped = Object.fromEntries(collectionNames.map(name => [name, []]));
+            const initialized = new Set();
+            data.forEach(row => {
+                if (row.id === '__initialized__') initialized.add(row.collection);
+                else if (grouped[row.collection]) grouped[row.collection].push(row.data);
+            });
+
+            collectionNames.forEach(name => {
+                if ((!publicCollections.has(name) && !includePrivate) || !initialized.has(name)) return;
+                const records = grouped[name];
+                if (name === 'bikes') records.forEach(bike => { if (!bike.description) bike.description = ''; });
+                if (name === 'bookings') {
+                    records.forEach(booking => {
+                        if (!booking.startedAt && booking.status === 'active') booking.startedAt = booking.createdAt || new Date().toISOString();
+                    });
+                }
+                setCollection(name, records);
+                cloudSnapshots[name] = JSON.parse(JSON.stringify(records));
+            });
+            initializedCollections = initialized;
+            renderPublicContent();
+            if (includePrivate) {
+                renderRentals();
+                renderInventory();
+                renderAdmin();
+                updateBadges();
+                checkLowStockAlerts();
+            }
+        }
+
+        async function uploadShopPhoto(image) {
+            if (!image || !image.startsWith('data:image/')) return image;
+            if (!currentAdminUser) throw new Error('Sign in as an administrator before uploading shop photos.');
+            const blob = await (await fetch(image)).blob();
+            const filePath = `${Date.now()}-${crypto.randomUUID()}.jpg`;
+            const { error } = await supabaseClient.storage.from('shop-photos').upload(filePath, blob, {
+                contentType: 'image/jpeg',
+                cacheControl: '3600',
+                upsert: false
+            });
+            if (error) throw error;
+            return supabaseClient.storage.from('shop-photos').getPublicUrl(filePath).data.publicUrl;
+        }
+
+        async function writeCloudRecord(collection, record) {
+            const savedRecord = JSON.parse(JSON.stringify(record));
+            if (publicCollections.has(collection) && typeof savedRecord.image === 'string') {
+                const hostedImage = await uploadShopPhoto(savedRecord.image);
+                if (hostedImage !== savedRecord.image) {
+                    savedRecord.image = hostedImage;
+                    record.image = hostedImage;
+                }
+            }
+            const { error } = await supabaseClient.from('shop_content').upsert({
+                collection,
+                id: String(savedRecord.id),
+                data: savedRecord
+            }, { onConflict: 'collection,id' });
+            if (error) throw error;
+            return savedRecord;
+        }
+
+        async function initializeAdminCollections() {
+            for (const collection of collectionNames) {
+                if (initializedCollections.has(collection)) continue;
+                for (const record of getCollection(collection)) {
+                    const savedRecord = await writeCloudRecord(collection, record);
+                    const snapshot = cloudSnapshots[collection];
+                    const existingIndex = snapshot.findIndex(item => String(item.id) === String(savedRecord.id));
+                    if (existingIndex === -1) snapshot.push(savedRecord);
+                    else snapshot[existingIndex] = savedRecord;
+                }
+                const { error } = await supabaseClient.from('shop_content').upsert({
+                    collection,
+                    id: '__initialized__',
+                    data: {}
+                }, { onConflict: 'collection,id' });
+                if (error) throw error;
+                initializedCollections.add(collection);
+            }
+            ['outriderz_bookings', 'outriderz_customers'].forEach(key => localStorage.removeItem(key));
+            legacyState.bookings = [];
+            legacyState.customers = [];
+        }
+
+        async function activateAdminSession(user) {
+            const { data, error } = await supabaseClient.rpc('is_shop_admin');
+            if (error) throw error;
+            if (!data) {
+                await supabaseClient.auth.signOut();
+                throw new Error('This account is not authorized as a shop administrator.');
+            }
+            currentAdminUser = user;
+            bookings = legacyState.bookings.map(booking => ({
+                ...booking,
+                startedAt: booking.startedAt || booking.createdAt || new Date().toISOString()
+            }));
+            customers = legacyState.customers;
+            await loadCloudCollections(true);
+            await initializeAdminCollections();
+            updateAdminAccess();
+            renderAllViews();
+        }
+
+        function updateAdminAccess() {
+            const isAdmin = Boolean(currentAdminUser);
+            document.getElementById('admin-overview').classList.toggle('hidden', !isAdmin);
+            document.getElementById('admin-inventory-shortcut').classList.toggle('hidden', !isAdmin);
+            document.getElementById('admin-workspace').classList.toggle('hidden', !isAdmin);
+            document.getElementById('admin-login-panel').classList.toggle('hidden', isAdmin);
+            if (!isAdmin && supabaseClient) document.getElementById('admin-login-form').classList.remove('hidden');
+        }
+
+        async function handleAdminSignIn(event) {
+            event.preventDefault();
+            if (!supabaseClient) {
+                showToast('Connect the Supabase project before signing in.', 'error');
+                return;
+            }
+            const button = document.getElementById('admin-login-button');
+            button.disabled = true;
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: document.getElementById('admin-email').value.trim(),
+                    password: document.getElementById('admin-password').value
+                });
+                if (error) throw error;
+                await activateAdminSession(data.user);
+                document.getElementById('admin-login-form').reset();
+                showToast('Signed in. Shop changes now sync to the public website.', 'success');
+            } catch (error) {
+                currentAdminUser = null;
+                if (supabaseClient) await supabaseClient.auth.signOut();
+                updateAdminAccess();
+                console.error('Administrator sign-in failed.', error);
+                showToast(error.message || 'Could not sign in to the shop dashboard.', 'error');
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        async function handleAdminSignOut() {
+            if (supabaseClient) {
+                const { error } = await supabaseClient.auth.signOut();
+                if (error) {
+                    showToast(`Could not sign out: ${error.message}`, 'error');
+                    return;
+                }
+            }
+            currentAdminUser = null;
+            bookings = [];
+            customers = [];
+            updateAdminAccess();
+            renderAllViews();
+            showToast('Signed out of the shop dashboard.', 'info');
+        }
+
+        function renderPublicContent() {
+            renderCatalog();
+            renderSaleBikes();
+        }
+
+        function renderAllViews() {
+            renderPublicContent();
+            renderRentals();
+            renderInventory();
+            renderAdmin();
+            updateBadges();
+            checkLowStockAlerts();
+        }
+
+        function startShopRealtime() {
+            supabaseClient.channel('public-shop-content')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_content' }, async () => {
+                    try {
+                        await loadCloudCollections(Boolean(currentAdminUser));
+                    } catch (error) {
+                        console.error('Could not refresh live shop content.', error);
+                        showToast(`Shop updates could not be refreshed: ${error.message}`, 'error');
+                    }
+                })
+                .subscribe();
+        }
+
+        async function saveState() {
+            if (!supabaseClient || !currentAdminUser) {
+                showToast('Sign in to the connected admin account before saving shop changes.', 'error');
                 return false;
             }
             try {
-                Object.entries(state).forEach(([key, value]) => localStorage.setItem(key, value));
+                for (const collection of collectionNames) {
+                    const previous = new Map(cloudSnapshots[collection].map(record => [String(record.id), record]));
+                    const current = new Map(getCollection(collection).map(record => [String(record.id), record]));
+                    for (const [id, record] of current) {
+                        const oldRecord = previous.get(id);
+                        if (oldRecord && JSON.stringify(oldRecord) === JSON.stringify(record)) continue;
+                        const savedRecord = await writeCloudRecord(collection, record);
+                        cloudSnapshots[collection] = cloudSnapshots[collection].filter(item => String(item.id) !== id);
+                        cloudSnapshots[collection].push(savedRecord);
+                    }
+                    for (const id of previous.keys()) {
+                        if (current.has(id)) continue;
+                        const { error } = await supabaseClient.from('shop_content').delete()
+                            .eq('collection', collection)
+                            .eq('id', id);
+                        if (error) throw error;
+                        cloudSnapshots[collection] = cloudSnapshots[collection].filter(item => String(item.id) !== id);
+                    }
+                }
+                updateBadges();
+                checkLowStockAlerts();
+                return true;
             } catch (error) {
-                showToast('Could not save shop data in this browser. Storage may be full; remove older photo listings and try again.', 'error');
+                console.error('Could not save shared shop data.', error);
+                collectionNames.forEach(collection => {
+                    setCollection(collection, JSON.parse(JSON.stringify(cloudSnapshots[collection])));
+                });
+                renderAllViews();
+                showToast(`Shop changes were not saved: ${error.message}`, 'error');
                 return false;
             }
-            updateBadges();
-            checkLowStockAlerts();
-            return true;
         }
 
         // View Switching
@@ -899,7 +1212,7 @@
         function checkLowStockAlerts() {
             const lowStockCount = spares.filter(s => s.stock <= s.threshold).length;
             const banner = document.getElementById('low-stock-banner');
-            if (lowStockCount > 0) {
+            if (currentAdminUser && lowStockCount > 0) {
                 banner.classList.remove('hidden');
                 banner.classList.add('flex');
             } else {
@@ -1098,10 +1411,10 @@
                     <img src="${escapeHTML(bike.image)}" alt="${escapeHTML(bike.name)}" onerror="this.src='https://placehold.co/600x400/18181b/facc15?text=Bike+Photo'" class="h-56 w-full object-cover">
                     <div class="p-5 space-y-3">
                         <div class="flex items-start justify-between gap-3">
-                            <h3 class="font-black uppercase text-lg text-white">${escapeHTML(bike.name)}</h3>
+                            <h3 class="font-black uppercase text-lg text-zinc-900">${escapeHTML(bike.name)}</h3>
                             <span class="shrink-0 font-black text-outriderz-red">${Number(bike.price).toLocaleString()} KES</span>
                         </div>
-                        <p class="text-sm text-zinc-400 leading-relaxed">${escapeHTML(bike.description)}</p>
+                        <p class="text-sm text-zinc-600 leading-relaxed">${escapeHTML(bike.description)}</p>
                         <a href="https://wa.me/254700425515?text=${encodeURIComponent(`Hello, I am interested in the ${bike.name} listed for ${Number(bike.price).toLocaleString()} KES.`)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-black uppercase text-white">
                             <i class="fa-brands fa-whatsapp text-base"></i> Enquire on WhatsApp
                         </a>
@@ -1146,7 +1459,7 @@
             document.getElementById('booking-modal').classList.remove('flex');
         }
 
-        function handleBookingSubmit(event) {
+        async function handleBookingSubmit(event) {
             event.preventDefault();
             const customerName = document.getElementById('customer-name').value.trim();
             const customerId = document.getElementById('customer-id').value.trim();
@@ -1190,7 +1503,6 @@
                 createdAt: startedAt
             };
 
-            const previousCustomerName = existingCustomer ? existingCustomer.name : null;
             if (existingCustomer) {
                 existingCustomer.name = customerName;
             } else {
@@ -1199,13 +1511,7 @@
             bookings.unshift(newBooking);
             if (bike) bike.status = 'rented';
 
-            if (!saveState()) {
-                bookings.shift();
-                if (bike) bike.status = 'available';
-                if (existingCustomer) existingCustomer.name = previousCustomerName;
-                else customers.shift();
-                return;
-            }
+            if (!await saveState()) return;
             document.getElementById('customer-bike-picker').classList.add('hidden');
             document.getElementById('customer-bike-id').required = false;
             closeBookingModal();
@@ -1290,7 +1596,7 @@
             });
         }
 
-        function completeBooking(bookingId) {
+        async function completeBooking(bookingId) {
             const booking = bookings.find(b => b.id === bookingId);
             if (!booking || booking.status !== 'active') return;
 
@@ -1306,7 +1612,7 @@
             const bike = bikes.find(b => b.id === booking.bikeId);
             if (bike) bike.status = 'available';
 
-            saveState();
+            if (!await saveState()) return;
             showToast(`Bike returned. Final charge: ${booking.totalPrice} KES for ${booking.elapsedMinutes} completed minutes.`, 'success');
             renderRentals();
             renderCatalog();
@@ -1344,7 +1650,7 @@
             document.getElementById('stat-revenue').innerText = `${accruedRevenue} KES`;
         }
 
-        function cancelBooking(bookingId) {
+        async function cancelBooking(bookingId) {
             const booking = bookings.find(b => b.id === bookingId);
             if (!booking || booking.status !== 'active') return;
             if (!window.confirm(`Cancel the active hire for ${booking.bikeName}? This stops the timer and records no charge.`)) return;
@@ -1356,7 +1662,7 @@
             const bike = bikes.find(b => b.id === booking.bikeId);
             if (bike) bike.status = 'available';
 
-            saveState();
+            if (!await saveState()) return;
             showToast('Booking cancelled.', 'info');
             renderRentals();
             renderCatalog();
@@ -1416,19 +1722,19 @@
             });
         }
 
-        function restockSpare(spareId) {
+        async function restockSpare(spareId) {
             const spare = spares.find(s => s.id === spareId);
             if (!spare) return;
             spare.stock += 10; // add 10 units on restock
-            saveState();
+            if (!await saveState()) return;
             renderInventory();
             renderAdmin();
             showToast(`Restocked ${spare.name}! Current stock: ${spare.stock}`, 'success');
         }
 
-        function deleteSpare(spareId) {
+        async function deleteSpare(spareId) {
             spares = spares.filter(s => s.id !== spareId);
-            saveState();
+            if (!await saveState()) return;
             renderInventory();
             renderAdmin();
             showToast('Spare item removed.', 'info');
@@ -1444,7 +1750,7 @@
             document.getElementById('add-spare-modal').classList.remove('flex');
         }
 
-        function handleAddNewSpare(event) {
+        async function handleAddNewSpare(event) {
             event.preventDefault();
             const name = document.getElementById('spare-name').value;
             const category = document.getElementById('spare-category').value;
@@ -1462,7 +1768,7 @@
             };
 
             spares.push(newSpare);
-            saveState();
+            if (!await saveState()) return;
             closeAddSpareModal();
             document.getElementById('add-spare-form').reset();
             renderInventory();
@@ -1472,8 +1778,7 @@
 
         // Admin Dashboard
         function renderAdmin() {
-            const totalFleet = bikes.length;
-            const activeRentals = bikes.filter(b => b.status === 'rented').length;
+            const activeRentals = bookings.filter(booking => booking.status === 'active').length;
             const lowStockCount = spares.filter(s => s.stock <= s.threshold).length;
             const totalRevenue = bookings.filter(b => b.status !== 'cancelled').reduce((acc, booking) => {
                 if (booking.status !== 'active') return acc + (booking.totalPrice || 0);
@@ -1481,55 +1786,58 @@
                 return acc + Math.floor(Math.max(0, Date.now() - startedAt) / 60000);
             }, 0);
 
-            document.getElementById('stat-total-fleet').innerText = totalFleet;
+            document.getElementById('stat-total-fleet').innerText = customers.length;
             document.getElementById('stat-active-rentals').innerText = activeRentals;
             document.getElementById('stat-low-stock').innerText = lowStockCount;
             document.getElementById('stat-revenue').innerText = `${totalRevenue} KES`;
 
-            const fleetTable = document.getElementById('admin-fleet-table');
-            fleetTable.innerHTML = '';
-            bikes.forEach(bike => {
-                let statusBadge = bike.status === 'available' ? 
-                    '<span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-wider rounded-full">Available</span>' :
-                    bike.status === 'rented' ?
-                    '<span class="px-3 py-1 bg-outriderz-red/20 text-outriderz-red text-[10px] font-black uppercase tracking-wider rounded-full">Rented</span>' :
-                    '<span class="px-3 py-1 bg-amber-500/20 text-amber-400 text-[10px] font-black uppercase tracking-wider rounded-full">Maintenance</span>';
-
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-zinc-900/50 transition-all';
-                tr.innerHTML = `
-                    <td class="py-4 px-4 flex items-center space-x-4">
-                        <img src="${escapeHTML(bike.image)}" class="w-12 h-12 rounded-xl object-cover bg-zinc-900 border border-zinc-800" onerror="this.src='https://placehold.co/100x100'">
-                        <div>
-                            <p class="font-black text-white uppercase text-sm">${escapeHTML(bike.name)}</p>
-                            <p class="text-xs text-zinc-500">${escapeHTML(bike.gears)}</p>
-                        </div>
-                    </td>
-                    <td class="py-4 px-4 font-bold text-zinc-300">${bike.type}</td>
-                    <td class="py-4 px-4 text-xs font-black text-outriderz-yellow">1 KES / Min</td>
-                    <td class="py-4 px-4">${statusBadge}</td>
-                    <td class="py-4 px-4 text-right space-x-2">
-                        ${bike.status === 'available' ? `
-                            <button onclick="openBookingModal('${bike.id}')" class="px-3 py-2 bg-outriderz-yellow hover:bg-outriderz-yellowDark text-black rounded-xl text-[10px] font-black uppercase tracking-wider transition-all">
-                                <i class="fa-solid fa-user-plus mr-1"></i> Add Customer
-                            </button>
-                            <button onclick="toggleBikeStatusAdmin('${bike.id}')" title="Mark for maintenance" class="p-2.5 bg-zinc-900 hover:bg-zinc-800 text-outriderz-yellow rounded-xl transition-all border border-zinc-800">
-                                <i class="fa-solid fa-wrench text-xs"></i>
-                            </button>
-                        ` : bike.status === 'maintenance' ? `
-                            <button onclick="toggleBikeStatusAdmin('${bike.id}')" title="Mark as available" class="p-2.5 bg-zinc-900 hover:bg-zinc-800 text-outriderz-yellow rounded-xl transition-all border border-zinc-800">
-                                <i class="fa-solid fa-wrench text-xs"></i>
-                            </button>
-                        ` : '<span class="text-[10px] font-black uppercase text-outriderz-red">Hire in progress</span>'}
-                        <button onclick="editBike('${bike.id}')" title="Edit bike details, description, and photo" class="p-2.5 bg-zinc-900 hover:bg-zinc-800 text-outriderz-yellow rounded-xl transition-all border border-zinc-800">
-                            <i class="fa-solid fa-pen text-xs"></i>
-                        </button>
-                        <button onclick="deleteBike('${bike.id}')" title="Delete Bike" class="p-2.5 bg-zinc-900 hover:bg-zinc-800 text-outriderz-red rounded-xl transition-all border border-zinc-800">
-                            <i class="fa-solid fa-trash text-xs"></i>
-                        </button>
-                    </td>
-                `;
-                fleetTable.appendChild(tr);
+            const customersList = document.getElementById('admin-customers-list');
+            const noCustomersMessage = document.getElementById('no-customers-message');
+            document.getElementById('customer-count').innerText = `${customers.length} customer${customers.length === 1 ? '' : 's'}`;
+            customersList.innerHTML = '';
+            const hires = [...bookings].sort((left, right) => {
+                if (left.status === 'active' && right.status !== 'active') return -1;
+                if (right.status === 'active' && left.status !== 'active') return 1;
+                return new Date(right.startedAt || right.createdAt).getTime() - new Date(left.startedAt || left.createdAt).getTime();
+            });
+            const hiredCustomerIds = new Set(hires.map(booking => String(booking.customerId || '').toLowerCase()));
+            const unstartedCustomers = customers.filter(customer => !hiredCustomerIds.has(String(customer.customerId || '').toLowerCase()));
+            const displayRows = [
+                ...hires.map(booking => ({ booking })),
+                ...unstartedCustomers.map(customer => ({ customer }))
+            ];
+            noCustomersMessage.classList.toggle('hidden', displayRows.length > 0);
+            displayRows.forEach(({ booking, customer }) => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-zinc-900/50 transition-all';
+                if (booking) {
+                    const startedAt = new Date(booking.startedAt || booking.createdAt);
+                    const stoppedAt = booking.returnedAt ? new Date(booking.returnedAt) : null;
+                    const elapsedMilliseconds = Math.max(0, (stoppedAt || new Date()).getTime() - startedAt.getTime());
+                    const amount = booking.status === 'active'
+                        ? Math.floor(elapsedMilliseconds / 60000)
+                        : (booking.totalPrice || 0);
+                    const stopwatch = booking.status === 'cancelled' ? 'Cancelled' : formatElapsedTime(elapsedMilliseconds);
+                    row.innerHTML = `
+                        <td class="py-3 px-4 font-bold text-white">${escapeHTML(booking.customerName || 'Customer not recorded')}</td>
+                        <td class="py-3 px-4 text-zinc-400">${escapeHTML(booking.customerId || '—')}</td>
+                        <td class="py-3 px-4 text-zinc-300">${startedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</td>
+                        <td class="py-3 px-4 text-zinc-300">${stoppedAt ? stoppedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—'}</td>
+                        <td class="py-3 px-4 font-mono font-bold text-outriderz-yellow"><span data-admin-rental-elapsed="${escapeHTML(booking.id)}">${stopwatch}</span></td>
+                        <td class="py-3 px-4 font-black text-outriderz-yellow"><span data-admin-rental-cost="${escapeHTML(booking.id)}">${amount}</span> KES</td>
+                        <td class="py-3 px-4 text-right">${booking.status === 'active'
+                            ? `<button onclick="completeBooking('${escapeHTML(booking.id)}')" class="rounded-xl bg-emerald-600 px-3 py-2 text-[10px] font-black uppercase tracking-wider text-white"><i class="fa-solid fa-stop mr-1"></i> Return</button>`
+                            : `<span class="text-[10px] font-black uppercase text-zinc-500">${booking.status === 'completed' ? 'Returned' : 'Cancelled'}</span>`}
+                        </td>
+                    `;
+                } else {
+                    row.innerHTML = `
+                        <td class="py-3 px-4 font-bold text-white">${escapeHTML(customer.name)}</td>
+                        <td class="py-3 px-4 text-zinc-400">${escapeHTML(customer.customerId)}</td>
+                        <td class="py-3 px-4 text-zinc-500" colspan="5">No hire started</td>
+                    `;
+                }
+                customersList.appendChild(row);
             });
 
             const saleBikeList = document.getElementById('admin-sale-bikes-list');
@@ -1542,9 +1850,9 @@
                 item.innerHTML = `
                     <img src="${escapeHTML(bike.image)}" alt="" onerror="this.src='https://placehold.co/120x120'" class="w-20 h-20 rounded-xl object-cover">
                     <div class="min-w-0 flex-1">
-                        <h4 class="font-black text-sm uppercase text-white">${escapeHTML(bike.name)}</h4>
+                        <h4 class="font-black text-sm uppercase text-zinc-900">${escapeHTML(bike.name)}</h4>
                         <p class="text-xs font-bold text-outriderz-red mt-1">${Number(bike.price).toLocaleString()} KES</p>
-                        <p class="text-xs text-zinc-400 mt-2 line-clamp-2">${escapeHTML(bike.description)}</p>
+                        <p class="text-xs text-zinc-600 mt-2 line-clamp-2">${escapeHTML(bike.description)}</p>
                         <div class="flex gap-2 mt-3">
                             <button onclick="editSaleBike('${bike.id}')" class="px-3 py-1.5 rounded-lg bg-outriderz-yellow text-black text-[10px] font-black uppercase">Edit</button>
                             <button onclick="deleteSaleBike('${bike.id}')" class="px-3 py-1.5 rounded-lg border border-outriderz-red text-outriderz-red text-[10px] font-black uppercase">Remove</button>
@@ -1553,48 +1861,9 @@
                 `;
                 saleBikeList.appendChild(item);
             });
-
-            const bookingsList = document.getElementById('admin-bookings-list');
-            bookingsList.innerHTML = '';
-            bookings.forEach(booking => {
-                const startedAt = new Date(booking.startedAt || booking.createdAt);
-                const endedAt = booking.returnedAt ? new Date(booking.returnedAt) : new Date();
-                const elapsedMilliseconds = Math.max(0, endedAt.getTime() - startedAt.getTime());
-                const elapsedMinutes = booking.status === 'active'
-                    ? Math.floor(elapsedMilliseconds / 60000)
-                    : (booking.elapsedMinutes ?? Math.floor(elapsedMilliseconds / 60000));
-                const amount = booking.status === 'active' ? elapsedMinutes : (booking.totalPrice || 0);
-                const item = document.createElement('div');
-                item.className = 'p-4 rounded-2xl border border-zinc-800 bg-zinc-950 space-y-2';
-                item.innerHTML = `
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-black text-outriderz-yellow">#${booking.id}</span>
-                        <span class="text-xs font-black text-white"><span data-admin-rental-cost="${booking.id}">${amount}</span> KES</span>
-                    </div>
-                    <p class="font-black text-sm text-white uppercase">${booking.bikeName}</p>
-                    <p class="text-xs font-bold text-white"><i class="fa-solid fa-user mr-1 text-outriderz-yellow"></i>${escapeHTML(booking.customerName || 'Customer not recorded')}</p>
-                    ${booking.customerId ? `<p class="text-xs text-zinc-400"><i class="fa-solid fa-id-card mr-1 text-outriderz-yellow"></i>ID / Admission: ${escapeHTML(booking.customerId)}</p>` : ''}
-                    <p class="text-xs text-zinc-400 font-semibold"><i class="fa-solid fa-location-dot mr-1 text-outriderz-red"></i>${booking.location}</p>
-                    <div class="flex items-center justify-between text-[11px] text-zinc-500 pt-2 border-t border-zinc-800">
-                        <span>${booking.status === 'active' ? 'Elapsed:' : 'Ride time:'} <span data-admin-rental-elapsed="${booking.id}">${formatElapsedTime(elapsedMilliseconds)}</span></span>
-                        <span class="font-black uppercase ${booking.status === 'active' ? 'text-emerald-400' : 'text-zinc-500'}">${booking.status}</span>
-                    </div>
-                    ${booking.status === 'active' ? `
-                        <div class="flex gap-2 pt-2">
-                            <button onclick="completeBooking('${booking.id}')" class="flex-1 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all">
-                                <i class="fa-solid fa-check mr-1"></i> Admin: Return Bike
-                            </button>
-                            <button onclick="cancelBooking('${booking.id}')" class="px-3 py-2 bg-zinc-900 hover:bg-zinc-800 text-outriderz-red rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border border-zinc-800">
-                                Cancel
-                            </button>
-                        </div>
-                    ` : ''}
-                `;
-                bookingsList.appendChild(item);
-            });
         }
 
-        function toggleBikeStatusAdmin(bikeId) {
+        async function toggleBikeStatusAdmin(bikeId) {
             const bike = bikes.find(b => b.id === bikeId);
             if (!bike) return;
             if (bike.status === 'rented') {
@@ -1602,19 +1871,19 @@
                 return;
             }
             bike.status = bike.status === 'maintenance' ? 'available' : 'maintenance';
-            saveState();
+            if (!await saveState()) return;
             renderAdmin();
             renderCatalog();
             showToast(`Updated status for ${bike.name}`, 'info');
         }
 
-        function deleteBike(bikeId) {
+        async function deleteBike(bikeId) {
             if (bookings.some(booking => booking.bikeId === bikeId && booking.status === 'active')) {
                 showToast('Return or cancel the active hire before removing this bicycle.', 'error');
                 return;
             }
             bikes = bikes.filter(b => b.id !== bikeId);
-            saveState();
+            if (!await saveState()) return;
             renderAdmin();
             renderCatalog();
             showToast('Bike removed from the shop.', 'info');
@@ -1687,18 +1956,11 @@
                     image
                 };
                 if (existingBike) {
-                    const oldBike = { ...existingBike };
                     Object.assign(existingBike, updatedBike);
-                    if (!saveState()) {
-                        Object.assign(existingBike, oldBike);
-                        return;
-                    }
+                    if (!await saveState()) return;
                 } else {
                     bikes.push(updatedBike);
-                    if (!saveState()) {
-                        bikes.pop();
-                        return;
-                    }
+                    if (!await saveState()) return;
                 }
                 closeAddBikeModal();
                 form.reset();
@@ -1771,14 +2033,9 @@
                     showToast('Enter a valid sale price greater than zero.', 'error');
                     return;
                 }
-                const oldBike = existingBike ? { ...existingBike } : null;
                 if (existingBike) Object.assign(existingBike, nextBike);
                 else saleBikes.push(nextBike);
-                if (!saveState()) {
-                    if (existingBike) Object.assign(existingBike, oldBike);
-                    else saleBikes.pop();
-                    return;
-                }
+                if (!await saveState()) return;
                 closeSaleBikeModal();
                 renderSaleBikes();
                 renderAdmin();
@@ -1790,14 +2047,11 @@
             }
         }
 
-        function deleteSaleBike(bikeId) {
+        async function deleteSaleBike(bikeId) {
             const index = saleBikes.findIndex(bike => bike.id === bikeId);
             if (index < 0) return;
             const [removedBike] = saleBikes.splice(index, 1);
-            if (!saveState()) {
-                saleBikes.splice(index, 0, removedBike);
-                return;
-            }
+            if (!await saveState()) return;
             renderSaleBikes();
             renderAdmin();
             showToast(`${removedBike.name} removed from sale listings.`, 'info');
