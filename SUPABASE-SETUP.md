@@ -11,12 +11,12 @@ The project URL is already saved in `supabase-config.js`:
 1. In Supabase **Project Settings → API**, copy the public `anon` / `publishable` key into `anonKey` in `supabase-config.js`. This key is intended for browser use. **Never use or publish the `service_role` key.**
 2. Open **SQL Editor** and run the contents of `supabase-setup.sql`.
 3. In **Authentication → Providers → Email**, leave email/password sign-in enabled and turn off public sign-ups.
-4. Invite `outridersbikingandadventure@gmail.com` in **Authentication → Users**. The owner sets their own password using Supabase's invitation flow; do not put the password in the website or source code.
+4. Invite `davidotieno13827@gmail.com` in **Authentication → Users**. The owner sets their own password using Supabase's invitation flow; do not put the password in the website or source code.
 5. After the invite, run this in the SQL Editor to grant the owner administrator access:
 
    ```sql
    insert into public.shop_admins (user_id)
-   select id from auth.users where email = 'outridersbikingandadventure@gmail.com'
+   select id from auth.users where email = 'davidotieno13827@gmail.com'
    on conflict do nothing;
    ```
 
