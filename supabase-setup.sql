@@ -121,6 +121,7 @@ begin
 end
 $$;
 
--- First create/invite the owner in Supabase Authentication, then add their exact email:
+-- First invite the owner in Supabase Authentication, then run this to grant admin access:
 -- insert into public.shop_admins (user_id)
--- select id from auth.users where email = 'OWNER_EMAIL' on conflict do nothing;
+-- select id from auth.users where email = 'outridersbikingandadventure@gmail.com'
+-- on conflict do nothing;
