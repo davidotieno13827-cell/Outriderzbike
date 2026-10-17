@@ -419,6 +419,9 @@
                     <button id="admin-login-button" type="submit" class="w-full rounded-2xl bg-outriderz-yellow px-5 py-3 font-black uppercase tracking-wider text-black disabled:cursor-not-allowed disabled:opacity-50">
                         Sign in to Admin
                     </button>
+                    <button id="admin-password-reset-button" type="button" onclick="handleAdminPasswordReset()" class="w-full rounded-2xl border border-zinc-700 px-5 py-3 text-xs font-black uppercase tracking-wider text-zinc-300 hover:border-outriderz-yellow hover:text-white">
+                        Email me a password setup / reset link
+                    </button>
                 </form>
             </div>
             <div id="admin-inventory-shortcut" class="hidden grid grid-cols-1 gap-4">
@@ -1085,6 +1088,34 @@
                 updateAdminAccess();
                 console.error('Administrator sign-in failed.', error);
                 showToast(error.message || 'Could not sign in to the shop dashboard.', 'error');
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        async function handleAdminPasswordReset() {
+            if (!supabaseClient) {
+                showToast('Connect the Supabase project before requesting a password link.', 'error');
+                return;
+            }
+            const email = document.getElementById('admin-email').value.trim();
+            if (!email) {
+                document.getElementById('admin-email').focus();
+                showToast('Enter your admin email first.', 'error');
+                return;
+            }
+
+            const button = document.getElementById('admin-password-reset-button');
+            button.disabled = true;
+            try {
+                const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+                    redirectTo: 'https://davidotieno13827-cell.github.io/Outriderzbike/outriderz_bike_hub.html'
+                });
+                if (error) throw error;
+                showToast('If this email has an admin account, a password link has been sent. Check your inbox and spam folder.', 'success');
+            } catch (error) {
+                console.error('Administrator password reset request failed.', error);
+                showToast(error.message || 'Could not send a password link. Please try again.', 'error');
             } finally {
                 button.disabled = false;
             }
