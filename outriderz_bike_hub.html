@@ -432,7 +432,19 @@
             </div>
             <!-- Stats Grid -->
             <div id="admin-overview" class="hidden space-y-8">
-            <div class="flex justify-end">
+            <div class="flex flex-col items-end gap-3">
+                <button id="admin-password-toggle" onclick="togglePasswordSetup()" class="rounded-xl border border-zinc-700 px-4 py-2 text-xs font-black uppercase text-zinc-300 hover:border-outriderz-yellow hover:text-white">Set / Change Password</button>
+                <form id="admin-password-form" onsubmit="handleAdminPasswordUpdate(event)" class="hidden w-full max-w-sm space-y-3 rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+                    <label class="block text-xs font-black uppercase tracking-wider text-outriderz-yellow">
+                        New password
+                        <input id="admin-new-password" type="password" minlength="8" autocomplete="new-password" required class="mt-2 w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm font-semibold text-white">
+                    </label>
+                    <label class="block text-xs font-black uppercase tracking-wider text-outriderz-yellow">
+                        Confirm new password
+                        <input id="admin-confirm-password" type="password" minlength="8" autocomplete="new-password" required class="mt-2 w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm font-semibold text-white">
+                    </label>
+                    <button id="admin-password-save" type="submit" class="w-full rounded-xl bg-outriderz-yellow px-4 py-3 text-xs font-black uppercase text-black">Save Password</button>
+                </form>
                 <button onclick="handleAdminSignOut()" class="rounded-xl border border-zinc-700 px-4 py-2 text-xs font-black uppercase text-zinc-300 hover:border-outriderz-red hover:text-white">Sign out</button>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -1073,6 +1085,51 @@
                 updateAdminAccess();
                 console.error('Administrator sign-in failed.', error);
                 showToast(error.message || 'Could not sign in to the shop dashboard.', 'error');
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        function togglePasswordSetup() {
+            const form = document.getElementById('admin-password-form');
+            if (!currentAdminUser) {
+                showToast('Sign in before setting a password.', 'error');
+                return;
+            }
+            form.classList.toggle('hidden');
+            if (!form.classList.contains('hidden')) {
+                document.getElementById('admin-new-password').focus();
+            }
+        }
+
+        async function handleAdminPasswordUpdate(event) {
+            event.preventDefault();
+            if (!currentAdminUser || !supabaseClient) {
+                showToast('Sign in before setting a password.', 'error');
+                return;
+            }
+            const password = document.getElementById('admin-new-password').value;
+            const confirmation = document.getElementById('admin-confirm-password').value;
+            if (password.length < 8) {
+                showToast('Use a password with at least 8 characters.', 'error');
+                return;
+            }
+            if (password !== confirmation) {
+                showToast('The passwords do not match.', 'error');
+                return;
+            }
+
+            const button = document.getElementById('admin-password-save');
+            button.disabled = true;
+            try {
+                const { error } = await supabaseClient.auth.updateUser({ password });
+                if (error) throw error;
+                document.getElementById('admin-password-form').reset();
+                document.getElementById('admin-password-form').classList.add('hidden');
+                showToast('Admin password set successfully.', 'success');
+            } catch (error) {
+                console.error('Administrator password update failed.', error);
+                showToast(error.message || 'Could not update the admin password.', 'error');
             } finally {
                 button.disabled = false;
             }

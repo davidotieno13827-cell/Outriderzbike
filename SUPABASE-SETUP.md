@@ -11,7 +11,7 @@ The project URL is already saved in `supabase-config.js`:
 1. In Supabase **Project Settings → API**, copy the public `anon` / `publishable` key into `anonKey` in `supabase-config.js`. This key is intended for browser use. **Never use or publish the `service_role` key.**
 2. Open **SQL Editor** and run the contents of `supabase-setup.sql`.
 3. In **Authentication → Providers → Email**, leave email/password sign-in enabled and turn off public sign-ups.
-4. Invite `davidotieno13827@gmail.com` in **Authentication → Users**. The owner sets their own password using Supabase's invitation flow; do not put the password in the website or source code.
+4. Invite `davidotieno13827@gmail.com` in **Authentication → Users**. The owner will create their password from the website after accepting the invitation; do not put a password in the website source.
 5. After the invite, run this in the SQL Editor to grant the owner administrator access:
 
    ```sql
@@ -20,7 +20,9 @@ The project URL is already saved in `supabase-config.js`:
    on conflict do nothing;
    ```
 
-6. In **Authentication → URL Configuration**, allow the GitHub Pages URL (and any custom domain). Publish the changes and sign in from the website's Admin page.
+6. In **Authentication → URL Configuration**, set **Site URL** to `https://davidotieno13827-cell.github.io/Outriderzbike/`. Add that URL and `https://davidotieno13827-cell.github.io/Outriderzbike/**` to the allowed redirect URLs. The root page forwards invitation tokens to the shop app while preserving them.
+7. If an invitation link already expired or opened `localhost:3000`, delete/resend the invitation after correcting the URL settings.
+8. Open the new invitation link. It should open the live shop and sign you in. In Admin, choose **Set / Change Password** to create the password for future sign-ins.
 
 Only a signed-in account listed in `shop_admins` can see or use the admin dashboard. Visitors can read public bike listings, but cannot access customer IDs, hires, spare inventory, or make database changes.
 
