@@ -953,6 +953,7 @@
                             document.getElementById('admin-email').value = session.user.email;
                         }
                         status.innerText = 'Set a new password for your administrator account below.';
+                        switchView('admin');
                         updateAdminAccess();
                     } else if (event === 'SIGNED_OUT') {
                         currentAdminUser = null;
