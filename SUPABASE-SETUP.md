@@ -8,6 +8,8 @@ The project URL is already saved in `supabase-config.js`:
 
 The Admin sign-in page also has a presentation demo using the password `1234567890`. It opens fictional sample data only; demo changes stay in memory and are never written to Supabase or saved in the browser. This password is visible in the public website code and must never be treated as protection for real shop data.
 
+When adding or editing a bike for sale in Admin, enter its category (for example, `Shimano` or `Type B`). The public home page creates category filter buttons from the listed bikes, so visitors can show all bikes or filter to one category. Existing sale listings without a category appear under `Uncategorized`.
+
 ## Connect and secure the admin
 
 1. In Supabase **Project Settings → API**, copy the public `anon` / `publishable` key into `anonKey` in `supabase-config.js`. This key is intended for browser use. **Never use or publish the `service_role` key.**
