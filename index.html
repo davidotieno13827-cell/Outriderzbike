@@ -865,7 +865,9 @@
         let saleBikes = legacyState.sale_bikes;
         let supabaseClient = null;
         let currentAdminUser = null;
-        let passwordRecoveryPending = false;
+        const passwordRecoveryStorageKey = 'outriders_admin_password_recovery';
+        let passwordRecoveryPending = new URLSearchParams(window.location.hash.slice(1)).get('type') === 'recovery'
+            || sessionStorage.getItem(passwordRecoveryStorageKey) === 'true';
         let selectedSaleBikeCategory = null;
         const collectionNames = ['bikes', 'spares', 'bookings', 'customers', 'sale_bikes'];
         const publicCollections = new Set(['bikes', 'sale_bikes']);
@@ -926,7 +928,8 @@
         async function initializeCloud() {
             const status = document.getElementById('backend-status-message');
             const loginButton = document.getElementById('admin-login-button');
-            const recoveryLinkOpened = new URLSearchParams(window.location.hash.slice(1)).get('type') === 'recovery';
+            const recoveryLinkOpened = passwordRecoveryPending
+                || new URLSearchParams(window.location.hash.slice(1)).get('type') === 'recovery';
             updateAdminAccess();
             if (!isSupabaseConfigured()) {
                 status.innerText = 'Supabase is not configured yet. Add the project URL and public anon key to supabase-config.js, then run supabase-setup.sql in the Supabase SQL Editor.';
@@ -947,6 +950,7 @@
                 supabaseClient.auth.onAuthStateChange((event, session) => {
                     if (event === 'PASSWORD_RECOVERY') {
                         passwordRecoveryPending = true;
+                        sessionStorage.setItem(passwordRecoveryStorageKey, 'true');
                         if (session && session.user.email) {
                             document.getElementById('admin-email').value = session.user.email;
                         }
@@ -956,6 +960,7 @@
                     } else if (event === 'SIGNED_OUT') {
                         currentAdminUser = null;
                         passwordRecoveryPending = false;
+                        sessionStorage.removeItem(passwordRecoveryStorageKey);
                         bookings = [];
                         customers = [];
                         updateAdminAccess();
@@ -1189,6 +1194,7 @@
                 if (error) throw error;
                 document.getElementById('admin-password-recovery-form').reset();
                 passwordRecoveryPending = false;
+                sessionStorage.removeItem(passwordRecoveryStorageKey);
                 await supabaseClient.auth.signOut();
                 updateAdminAccess();
                 showToast('Password set. Sign in with your new password.', 'success');
