@@ -6,9 +6,36 @@ The project URL is already saved in `supabase-config.js`:
 
 `https://foplmhiqlcwqisyibord.supabase.co`
 
-The Admin sign-in page also has a presentation demo using the password `1234567890`. It opens fictional sample data only; demo changes stay in memory and are never written to Supabase or saved in the browser. This password is visible in the public website code and must never be treated as protection for real shop data.
-
 When adding or editing a bike for sale in Admin, enter its category (for example, `Shimano` or `Type B`). The public home page creates category filter buttons from the listed bikes, so visitors can show all bikes or filter to one category. Existing sale listings without a category appear under `Uncategorized`.
+
+## Secure the custom domain
+
+The production domain is `outridersbikeshop.co.ke`, managed at Truehost Kenya. Verify ownership with GitHub before connecting DNS; this reduces the risk of someone else claiming the domain for another GitHub Pages site.
+
+1. In GitHub **Profile → Settings → Pages**, add `outridersbikeshop.co.ke` and follow the verification prompt. At Truehost, add the exact TXT record GitHub gives you. Wait for GitHub to show the domain as verified.
+2. In this repository, open **Settings → Pages** and set the custom domain to `outridersbikeshop.co.ke`. Keep the site on GitHub Pages and wait for the HTTPS certificate to become available.
+3. At Truehost DNS, create these records for the apex (`@`) domain:
+
+   | Type | Host | Value |
+   |---|---|---|
+   | A | `@` | `185.199.108.153` |
+   | A | `@` | `185.199.109.153` |
+   | A | `@` | `185.199.110.153` |
+   | A | `@` | `185.199.111.153` |
+   | CNAME | `www` | `davidotieno13827-cell.github.io` |
+
+   Remove conflicting existing A/AAAA/CNAME records for `@` or `www`; do not create wildcard (`*`) DNS records. DNS propagation can take up to 24 hours.
+4. After GitHub Pages reports the domain is ready, enable **Enforce HTTPS** in repository **Settings → Pages**.
+5. In Supabase **Authentication → URL Configuration**, once HTTPS works, set **Site URL** to `https://outridersbikeshop.co.ke/`. Add these exact URLs to allowed redirect URLs while switching over:
+
+   ```text
+   https://outridersbikeshop.co.ke/
+   https://outridersbikeshop.co.ke/outriderz_bike_hub.html
+   https://davidotieno13827-cell.github.io/Outriderzbike/
+   https://davidotieno13827-cell.github.io/Outriderzbike/outriderz_bike_hub.html
+   ```
+
+   The password-reset flow redirects to the same host the owner is currently using. Remove old `localhost` entries from the production allowlist if they are not needed for local development.
 
 ## Connect and secure the admin
 
@@ -24,7 +51,7 @@ When adding or editing a bike for sale in Admin, enter its category (for example
    on conflict do nothing;
    ```
 
-6. In **Authentication → URL Configuration**, set **Site URL** to `https://davidotieno13827-cell.github.io/Outriderzbike/`. Add that URL and `https://davidotieno13827-cell.github.io/Outriderzbike/**` to the allowed redirect URLs. The root page forwards invitation tokens to the shop app while preserving them.
+6. Until the custom domain has HTTPS, keep the current GitHub Pages URL as Supabase's **Site URL** and an allowed redirect. After HTTPS is enabled, follow **Secure the custom domain** above and change the Site URL.
 7. If an invitation link already expired or opened `localhost:3000`, delete/resend the invitation after correcting the URL settings.
 8. Open the invitation link. If it asks for an existing password, open the live shop, enter the admin email, and choose **Email me a password setup / reset link**. Follow the link emailed to you; the shop will show fields to enter and confirm a new password.
 

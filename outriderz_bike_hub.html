@@ -424,17 +424,6 @@
                         Email me a password setup / reset link
                     </button>
                 </form>
-                <form id="admin-demo-login-form" onsubmit="handleDemoSignIn(event)" class="space-y-3 border-t border-zinc-800 pt-4">
-                    <p class="text-xs font-black uppercase tracking-wider text-zinc-400">Presentation demo - sample data only</p>
-                    <label class="block text-xs font-black uppercase tracking-wider text-outriderz-yellow">
-                        Demo password
-                        <input id="admin-demo-password" type="password" autocomplete="off" required class="mt-2 w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm font-semibold text-white">
-                    </label>
-                    <button id="admin-demo-login-button" type="submit" class="w-full rounded-2xl border border-outriderz-yellow px-5 py-3 text-xs font-black uppercase tracking-wider text-outriderz-yellow hover:bg-outriderz-yellow hover:text-black">
-                        Open sample demo
-                    </button>
-                    <p class="text-xs text-zinc-500">Demo changes are temporary and never saved to the real shop.</p>
-                </form>
                 <form id="admin-password-recovery-form" onsubmit="handleAdminPasswordRecovery(event)" class="hidden space-y-4">
                     <p class="text-sm text-zinc-400">Choose a new password for your administrator account.</p>
                     <label class="block text-xs font-black uppercase tracking-wider text-outriderz-yellow">
@@ -461,9 +450,6 @@
             </div>
             <!-- Stats Grid -->
             <div id="admin-overview" class="hidden space-y-8">
-            <div id="admin-demo-notice" class="hidden rounded-2xl border border-amber-500/40 bg-amber-50 p-4 text-sm font-bold text-amber-900">
-                DEMO MODE: Sample data only. Changes are temporary and will not be saved to the real shop.
-            </div>
             <div class="flex flex-col items-end gap-3">
                 <button id="admin-password-toggle" onclick="togglePasswordSetup()" class="rounded-xl border border-zinc-700 px-4 py-2 text-xs font-black uppercase text-zinc-300 hover:border-outriderz-yellow hover:text-white">Set / Change Password</button>
                 <form id="admin-password-form" onsubmit="handleAdminPasswordUpdate(event)" class="hidden w-full max-w-sm space-y-3 rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
@@ -886,9 +872,6 @@
         let supabaseClient = null;
         let currentAdminUser = null;
         let passwordRecoveryPending = false;
-        let demoAdminMode = false;
-        let demoReturnState = null;
-        const demoPassword = '1234567890';
         let selectedSaleBikeCategory = null;
         const collectionNames = ['bikes', 'spares', 'bookings', 'customers', 'sale_bikes'];
         const publicCollections = new Set(['bikes', 'sale_bikes']);
@@ -1106,18 +1089,13 @@
         }
 
         function updateAdminAccess() {
-            const isAdmin = Boolean(currentAdminUser) || demoAdminMode;
+            const isAdmin = Boolean(currentAdminUser);
             document.getElementById('admin-overview').classList.toggle('hidden', !isAdmin || passwordRecoveryPending);
             document.getElementById('admin-inventory-shortcut').classList.toggle('hidden', !isAdmin || passwordRecoveryPending);
             document.getElementById('admin-workspace').classList.toggle('hidden', !isAdmin || passwordRecoveryPending);
             document.getElementById('admin-login-panel').classList.toggle('hidden', isAdmin && !passwordRecoveryPending);
-            document.getElementById('admin-login-form').classList.toggle('hidden', !supabaseClient || passwordRecoveryPending || demoAdminMode);
-            document.getElementById('admin-demo-login-form').classList.toggle('hidden', demoAdminMode || passwordRecoveryPending);
+            document.getElementById('admin-login-form').classList.toggle('hidden', !supabaseClient || passwordRecoveryPending);
             document.getElementById('admin-password-recovery-form').classList.toggle('hidden', !passwordRecoveryPending);
-            document.getElementById('admin-demo-notice').classList.toggle('hidden', !demoAdminMode);
-            document.getElementById('admin-password-toggle').classList.toggle('hidden', demoAdminMode);
-            document.getElementById('admin-dashboard-exit-button').innerText = demoAdminMode ? 'Exit demo' : 'Sign out';
-            if (demoAdminMode) document.getElementById('admin-password-form').classList.add('hidden');
         }
 
         async function handleAdminSignIn(event) {
@@ -1148,71 +1126,6 @@
             }
         }
 
-        function handleDemoSignIn(event) {
-            event.preventDefault();
-            if (demoAdminMode || currentAdminUser) {
-                showToast('Exit the current dashboard before opening demo mode.', 'error');
-                return;
-            }
-            const passwordInput = document.getElementById('admin-demo-password');
-            if (passwordInput.value !== demoPassword) {
-                passwordInput.value = '';
-                showToast('That demo password is not correct.', 'error');
-                return;
-            }
-
-            demoReturnState = {
-                bikes: JSON.parse(JSON.stringify(bikes)),
-                spares: JSON.parse(JSON.stringify(spares)),
-                bookings: JSON.parse(JSON.stringify(bookings)),
-                customers: JSON.parse(JSON.stringify(customers)),
-                saleBikes: JSON.parse(JSON.stringify(saleBikes))
-            };
-
-            const startedAt = new Date(Date.now() - 12 * 60 * 1000).toISOString();
-            const returnedAt = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-            bikes = JSON.parse(JSON.stringify(defaultBikes));
-            bikes.find(bike => bike.id === 'bike-2').status = 'rented';
-            spares = JSON.parse(JSON.stringify(defaultSpares));
-            bookings = [
-                {
-                    id: 'DEMO-HIRE-001',
-                    bikeId: 'bike-2',
-                    bikeName: 'Velocity Road Master',
-                    customerName: 'Demo Customer',
-                    customerId: 'DEMO-1001',
-                    location: 'Outriders Bike Shop',
-                    startedAt,
-                    createdAt: startedAt,
-                    totalPrice: 0,
-                    status: 'active'
-                },
-                {
-                    id: 'DEMO-HIRE-002',
-                    bikeId: 'bike-3',
-                    bikeName: 'Metro City Glide',
-                    customerName: 'Sample Rider',
-                    customerId: 'DEMO-1002',
-                    location: 'Outriders Bike Shop',
-                    startedAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-                    createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-                    returnedAt,
-                    totalPrice: 10,
-                    status: 'completed'
-                }
-            ];
-            customers = [
-                { id: 'DEMO-CUSTOMER-001', name: 'Demo Customer', customerId: 'DEMO-1001' },
-                { id: 'DEMO-CUSTOMER-002', name: 'Sample Rider', customerId: 'DEMO-1002' }
-            ];
-            saleBikes = [];
-            demoAdminMode = true;
-            document.getElementById('admin-demo-login-form').reset();
-            updateAdminAccess();
-            renderAllViews();
-            showToast('Demo opened with sample data. Nothing is saved to the real shop.', 'info');
-        }
-
         async function handleAdminPasswordReset() {
             if (!supabaseClient) {
                 showToast('Connect the Supabase project before requesting a password link.', 'error');
@@ -1229,7 +1142,7 @@
             button.disabled = true;
             try {
                 const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-                    redirectTo: 'https://davidotieno13827-cell.github.io/Outriderzbike/outriderz_bike_hub.html'
+                    redirectTo: new URL(window.location.pathname, window.location.origin).toString()
                 });
                 if (error) throw error;
                 showToast('If this email has an admin account, a password link has been sent. Check your inbox and spam folder.', 'success');
@@ -1323,7 +1236,7 @@
         }
 
         async function handleAdminSignOut() {
-            if (!demoAdminMode && supabaseClient) {
+            if (supabaseClient) {
                 const { error } = await supabaseClient.auth.signOut();
                 if (error) {
                     showToast(`Could not sign out: ${error.message}`, 'error');
@@ -1331,18 +1244,8 @@
                 }
             }
             currentAdminUser = null;
-            if (demoAdminMode && demoReturnState) {
-                bikes = demoReturnState.bikes;
-                spares = demoReturnState.spares;
-                bookings = demoReturnState.bookings;
-                customers = demoReturnState.customers;
-                saleBikes = demoReturnState.saleBikes;
-            } else {
-                bookings = [];
-                customers = [];
-            }
-            demoAdminMode = false;
-            demoReturnState = null;
+            bookings = [];
+            customers = [];
             updateAdminAccess();
             renderAllViews();
             showToast('Exited the shop dashboard.', 'info');
@@ -1365,7 +1268,6 @@
         function startShopRealtime() {
             supabaseClient.channel('public-shop-content')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_content' }, async () => {
-                    if (demoAdminMode) return;
                     try {
                         await loadCloudCollections(Boolean(currentAdminUser));
                     } catch (error) {
@@ -1377,10 +1279,6 @@
         }
 
         async function saveState() {
-            if (demoAdminMode) {
-                showToast('Demo mode: this change is temporary and is not saved to the real shop.', 'info');
-                return true;
-            }
             if (!supabaseClient || !currentAdminUser) {
                 showToast('Sign in to the connected admin account before saving shop changes.', 'error');
                 return false;
@@ -1471,7 +1369,7 @@
         function checkLowStockAlerts() {
             const lowStockCount = spares.filter(s => s.stock <= s.threshold).length;
             const banner = document.getElementById('low-stock-banner');
-            if ((currentAdminUser || demoAdminMode) && lowStockCount > 0) {
+            if (currentAdminUser && lowStockCount > 0) {
                 banner.classList.remove('hidden');
                 banner.classList.add('flex');
             } else {
