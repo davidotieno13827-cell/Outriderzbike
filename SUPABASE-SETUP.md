@@ -6,6 +6,8 @@ The project URL is already saved in `supabase-config.js`:
 
 `https://foplmhiqlcwqisyibord.supabase.co`
 
+The Admin sign-in page also has a presentation demo using the password `1234567890`. It opens fictional sample data only; demo changes stay in memory and are never written to Supabase or saved in the browser. This password is visible in the public website code and must never be treated as protection for real shop data.
+
 ## Connect and secure the admin
 
 1. In Supabase **Project Settings → API**, copy the public `anon` / `publishable` key into `anonKey` in `supabase-config.js`. This key is intended for browser use. **Never use or publish the `service_role` key.**
