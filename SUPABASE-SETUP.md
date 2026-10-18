@@ -30,9 +30,7 @@ The production domain is `outridersbikeshop.co.ke`, managed at Truehost Kenya. V
 
    ```text
    https://outridersbikeshop.co.ke/
-   https://outridersbikeshop.co.ke/outriderz_bike_hub.html
    https://davidotieno13827-cell.github.io/Outriderzbike/
-   https://davidotieno13827-cell.github.io/Outriderzbike/outriderz_bike_hub.html
    ```
 
    The password-reset flow redirects to the same host the owner is currently using. Remove old `localhost` entries from the production allowlist if they are not needed for local development.
