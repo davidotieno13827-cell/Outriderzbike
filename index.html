@@ -409,13 +409,15 @@
                     </label>
                     <label class="block text-xs font-black uppercase tracking-wider text-outriderz-yellow">
                         Password
-                        <input id="admin-password" type="password" autocomplete="current-password" required class="mt-2 w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm font-semibold text-white">
+                        <span class="relative mt-2 block">
+                            <input id="admin-password" type="password" autocomplete="current-password" required class="w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 pr-12 text-sm font-semibold text-white">
+                            <button id="admin-password-visibility-toggle" type="button" onclick="toggleAdminPasswordVisibility()" aria-label="Show password" aria-pressed="false" class="absolute inset-y-0 right-0 flex items-center px-4 text-zinc-400 hover:text-white">
+                                <i id="admin-password-visibility-icon" class="fa-solid fa-eye" aria-hidden="true"></i>
+                            </button>
+                        </span>
                     </label>
                     <button id="admin-login-button" type="submit" class="w-full rounded-2xl bg-outriderz-yellow px-5 py-3 font-black uppercase tracking-wider text-black disabled:cursor-not-allowed disabled:opacity-50">
                         Sign in to Admin
-                    </button>
-                    <button id="admin-password-reset-button" type="button" onclick="handleAdminPasswordReset()" class="w-full rounded-2xl border border-zinc-700 px-5 py-3 text-xs font-black uppercase tracking-wider text-zinc-300 hover:border-outriderz-yellow hover:text-white">
-                        Email me a password setup / reset link
                     </button>
                 </form>
                 <form id="admin-password-recovery-form" onsubmit="handleAdminPasswordRecovery(event)" class="hidden space-y-4">
@@ -1114,6 +1116,18 @@
             document.getElementById('admin-password-recovery-form').classList.toggle('hidden', !passwordRecoveryPending);
         }
 
+        function toggleAdminPasswordVisibility() {
+            const passwordInput = document.getElementById('admin-password');
+            const toggle = document.getElementById('admin-password-visibility-toggle');
+            const icon = document.getElementById('admin-password-visibility-icon');
+            const isVisible = passwordInput.type === 'text';
+            passwordInput.type = isVisible ? 'password' : 'text';
+            toggle.setAttribute('aria-label', isVisible ? 'Show password' : 'Hide password');
+            toggle.setAttribute('aria-pressed', String(!isVisible));
+            icon.classList.toggle('fa-eye', isVisible);
+            icon.classList.toggle('fa-eye-slash', !isVisible);
+        }
+
         async function handleAdminSignIn(event) {
             event.preventDefault();
             if (!supabaseClient) {
@@ -1138,34 +1152,10 @@
                 console.error('Administrator sign-in failed.', error);
                 showToast(error.message || 'Could not sign in to the shop dashboard.', 'error');
             } finally {
-                button.disabled = false;
-            }
-        }
-
-        async function handleAdminPasswordReset() {
-            if (!supabaseClient) {
-                showToast('Connect the Supabase project before requesting a password link.', 'error');
-                return;
-            }
-            const email = document.getElementById('admin-email').value.trim();
-            if (!email) {
-                document.getElementById('admin-email').focus();
-                showToast('Enter your admin email first.', 'error');
-                return;
-            }
-
-            const button = document.getElementById('admin-password-reset-button');
-            button.disabled = true;
-            try {
-                const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-                    redirectTo: new URL(window.location.pathname, window.location.origin).toString()
-                });
-                if (error) throw error;
-                showToast('If this email has an admin account, a password link has been sent. Check your inbox and spam folder.', 'success');
-            } catch (error) {
-                console.error('Administrator password reset request failed.', error);
-                showToast(error.message || 'Could not send a password link. Please try again.', 'error');
-            } finally {
+                document.getElementById('admin-password').type = 'password';
+                document.getElementById('admin-password-visibility-toggle').setAttribute('aria-label', 'Show password');
+                document.getElementById('admin-password-visibility-toggle').setAttribute('aria-pressed', 'false');
+                document.getElementById('admin-password-visibility-icon').classList.replace('fa-eye-slash', 'fa-eye');
                 button.disabled = false;
             }
         }
