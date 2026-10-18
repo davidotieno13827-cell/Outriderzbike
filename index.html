@@ -136,9 +136,6 @@
                 <button onclick="switchView('catalog')" id="nav-catalog" class="px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all text-zinc-400 hover:text-white">
                     <i class="fa-solid fa-store mr-2"></i>Bike Shop
                 </button>
-                <button onclick="switchView('admin')" id="nav-admin" class="px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all text-zinc-400 hover:text-white">
-                    <i class="fa-solid fa-gauge-high mr-2"></i>Admin
-                </button>
             </nav>
 
             <!-- User profile & mobile trigger -->
@@ -166,9 +163,6 @@
             </button>
             <button onclick="switchView('catalog'); toggleMobileMenu();" class="w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-white hover:bg-zinc-800 flex items-center">
                 <i class="fa-solid fa-store mr-3 text-outriderz-yellow w-5"></i>Bike Shop
-            </button>
-            <button onclick="switchView('admin'); toggleMobileMenu();" class="w-full text-left px-4 py-3 rounded-xl font-bold text-sm text-white hover:bg-zinc-800 flex items-center">
-                <i class="fa-solid fa-gauge-high mr-3 text-outriderz-yellow w-5"></i>Admin Dashboard
             </button>
         </div>
     </header>
@@ -900,6 +894,9 @@
             renderAdmin();
             updateBadges();
             checkLowStockAlerts();
+            if (new URLSearchParams(window.location.search).has('admin')) {
+                switchView('admin');
+            }
         };
         window.setInterval(updateActiveRentalTimers, 1000);
 
@@ -1329,7 +1326,6 @@
 
             document.getElementById('nav-home').className = 'px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all text-zinc-400 hover:text-white';
             document.getElementById('nav-catalog').className = 'px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all text-zinc-400 hover:text-white';
-            document.getElementById('nav-admin').className = 'px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all text-zinc-400 hover:text-white';
 
             if (viewName === 'home') {
                 document.getElementById('view-home').classList.remove('hidden');
@@ -1341,7 +1337,6 @@
                 renderCatalog();
             } else if (viewName === 'admin') {
                 document.getElementById('view-admin').classList.remove('hidden');
-                document.getElementById('nav-admin').className = 'px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all text-black bg-outriderz-yellow shadow-md';
                 renderAdmin();
             }
             if (adminSectionId) {
