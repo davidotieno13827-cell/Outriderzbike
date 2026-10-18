@@ -51,7 +51,7 @@ The production domain is `outridersbikeshop.co.ke`, managed at Truehost Kenya. V
 
 6. Until the custom domain has HTTPS, keep the current GitHub Pages URL as Supabase's **Site URL** and an allowed redirect. After HTTPS is enabled, follow **Secure the custom domain** above and change the Site URL.
 7. If an invitation link already expired or opened `localhost:3000`, delete/resend the invitation after correcting the URL settings.
-8. Open the invitation link. If it asks for an existing password, open the live shop, enter the admin email, and choose **Email me a password setup / reset link**. Follow the link emailed to you; the shop will show fields to enter and confirm a new password.
+8. Open the invitation link. If it asks for an existing password, open the live shop, enter the admin email, and choose **Email me a password setup / reset link**. Follow the newest link in the email; the shop will show fields to enter and confirm a new password. Recovery links are single-use and expire, so request a fresh one if a link has already been opened or is no longer valid.
 
 The public navigation does not show an Admin button. Share the admin-entry bookmark with the shopkeeper privately; do not publish it on the public website. The bookmark is only a convenience, not an access control: only a signed-in account listed in `shop_admins` can use the admin dashboard. Visitors can read public bike listings, but cannot access customer IDs, hires, spare inventory, or make database changes; Supabase authentication and row-level security enforce those permissions.
 

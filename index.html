@@ -926,6 +926,7 @@
         async function initializeCloud() {
             const status = document.getElementById('backend-status-message');
             const loginButton = document.getElementById('admin-login-button');
+            const recoveryLinkOpened = new URLSearchParams(window.location.hash.slice(1)).get('type') === 'recovery';
             updateAdminAccess();
             if (!isSupabaseConfigured()) {
                 status.innerText = 'Supabase is not configured yet. Add the project URL and public anon key to supabase-config.js, then run supabase-setup.sql in the Supabase SQL Editor.';
@@ -963,9 +964,21 @@
                 await loadCloudCollections(false);
                 const { data, error } = await supabaseClient.auth.getSession();
                 if (error) throw error;
-                if (data.session) await activateAdminSession(data.session.user);
+                if (data.session && (passwordRecoveryPending || recoveryLinkOpened)) {
+                    passwordRecoveryPending = true;
+                    status.innerText = 'Set a new password for your administrator account below.';
+                    switchView('admin');
+                    updateAdminAccess();
+                } else if (data.session) {
+                    await activateAdminSession(data.session.user);
+                } else if (recoveryLinkOpened) {
+                    status.innerText = 'This password link is invalid or expired. Request a new password link and open the newest email.';
+                    switchView('admin');
+                }
                 if (!passwordRecoveryPending) {
-                    status.innerText = 'Sign in with the administrator account to manage shared shop content.';
+                    if (!recoveryLinkOpened || data.session) {
+                        status.innerText = 'Sign in with the administrator account to manage shared shop content.';
+                    }
                 }
                 loginButton.disabled = false;
                 startShopRealtime();
@@ -1176,10 +1189,9 @@
                 if (error) throw error;
                 document.getElementById('admin-password-recovery-form').reset();
                 passwordRecoveryPending = false;
+                await supabaseClient.auth.signOut();
                 updateAdminAccess();
-                showToast(currentAdminUser
-                    ? 'Password updated. You are signed in.'
-                    : 'Password set. Sign in with your new password.', 'success');
+                showToast('Password set. Sign in with your new password.', 'success');
             } catch (error) {
                 console.error('Administrator password recovery failed.', error);
                 showToast(error.message || 'Could not set the new password. Please reopen the latest recovery email.', 'error');
