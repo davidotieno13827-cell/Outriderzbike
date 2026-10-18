@@ -423,6 +423,20 @@
                         Email me a password setup / reset link
                     </button>
                 </form>
+                <form id="admin-password-recovery-form" onsubmit="handleAdminPasswordRecovery(event)" class="hidden space-y-4">
+                    <p class="text-sm text-zinc-400">Choose a new password for your administrator account.</p>
+                    <label class="block text-xs font-black uppercase tracking-wider text-outriderz-yellow">
+                        New password
+                        <input id="admin-recovery-password" type="password" minlength="8" autocomplete="new-password" required class="mt-2 w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm font-semibold text-white">
+                    </label>
+                    <label class="block text-xs font-black uppercase tracking-wider text-outriderz-yellow">
+                        Confirm new password
+                        <input id="admin-recovery-password-confirm" type="password" minlength="8" autocomplete="new-password" required class="mt-2 w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm font-semibold text-white">
+                    </label>
+                    <button id="admin-password-recovery-save" type="submit" class="w-full rounded-2xl bg-outriderz-yellow px-5 py-3 font-black uppercase tracking-wider text-black disabled:cursor-not-allowed disabled:opacity-50">
+                        Save New Password
+                    </button>
+                </form>
             </div>
             <div id="admin-inventory-shortcut" class="hidden grid grid-cols-1 gap-4">
                 <a href="#view-inventory" onclick="switchView('inventory')" class="flex items-center justify-between gap-4 rounded-2xl border border-zinc-800 bg-outriderz-zinc900 p-5 hover:border-outriderz-yellow transition-colors">
@@ -852,6 +866,7 @@
         let saleBikes = legacyState.sale_bikes;
         let supabaseClient = null;
         let currentAdminUser = null;
+        let passwordRecoveryPending = false;
         const collectionNames = ['bikes', 'spares', 'bookings', 'customers', 'sale_bikes'];
         const publicCollections = new Set(['bikes', 'sale_bikes']);
         const cloudSnapshots = Object.fromEntries(collectionNames.map(name => [name, []]));
@@ -924,9 +939,18 @@
             const config = window.OUTRIDERS_SUPABASE_CONFIG;
             try {
                 supabaseClient = window.supabase.createClient(config.url, config.anonKey);
-                supabaseClient.auth.onAuthStateChange(event => {
-                    if (event === 'SIGNED_OUT') {
+                updateAdminAccess();
+                supabaseClient.auth.onAuthStateChange((event, session) => {
+                    if (event === 'PASSWORD_RECOVERY') {
+                        passwordRecoveryPending = true;
+                        if (session && session.user.email) {
+                            document.getElementById('admin-email').value = session.user.email;
+                        }
+                        status.innerText = 'Set a new password for your administrator account below.';
+                        updateAdminAccess();
+                    } else if (event === 'SIGNED_OUT') {
                         currentAdminUser = null;
+                        passwordRecoveryPending = false;
                         bookings = [];
                         customers = [];
                         updateAdminAccess();
@@ -936,7 +960,9 @@
                 const { data, error } = await supabaseClient.auth.getSession();
                 if (error) throw error;
                 if (data.session) await activateAdminSession(data.session.user);
-                status.innerText = 'Sign in with the administrator account to manage shared shop content.';
+                if (!passwordRecoveryPending) {
+                    status.innerText = 'Sign in with the administrator account to manage shared shop content.';
+                }
                 loginButton.disabled = false;
                 startShopRealtime();
             } catch (error) {
@@ -1058,11 +1084,12 @@
 
         function updateAdminAccess() {
             const isAdmin = Boolean(currentAdminUser);
-            document.getElementById('admin-overview').classList.toggle('hidden', !isAdmin);
-            document.getElementById('admin-inventory-shortcut').classList.toggle('hidden', !isAdmin);
-            document.getElementById('admin-workspace').classList.toggle('hidden', !isAdmin);
-            document.getElementById('admin-login-panel').classList.toggle('hidden', isAdmin);
-            if (!isAdmin && supabaseClient) document.getElementById('admin-login-form').classList.remove('hidden');
+            document.getElementById('admin-overview').classList.toggle('hidden', !isAdmin || passwordRecoveryPending);
+            document.getElementById('admin-inventory-shortcut').classList.toggle('hidden', !isAdmin || passwordRecoveryPending);
+            document.getElementById('admin-workspace').classList.toggle('hidden', !isAdmin || passwordRecoveryPending);
+            document.getElementById('admin-login-panel').classList.toggle('hidden', isAdmin && !passwordRecoveryPending);
+            document.getElementById('admin-login-form').classList.toggle('hidden', !supabaseClient || passwordRecoveryPending);
+            document.getElementById('admin-password-recovery-form').classList.toggle('hidden', !passwordRecoveryPending);
         }
 
         async function handleAdminSignIn(event) {
@@ -1116,6 +1143,42 @@
             } catch (error) {
                 console.error('Administrator password reset request failed.', error);
                 showToast(error.message || 'Could not send a password link. Please try again.', 'error');
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        async function handleAdminPasswordRecovery(event) {
+            event.preventDefault();
+            if (!supabaseClient || !passwordRecoveryPending) {
+                showToast('Open the password recovery link from your email before setting a new password.', 'error');
+                return;
+            }
+            const password = document.getElementById('admin-recovery-password').value;
+            const confirmation = document.getElementById('admin-recovery-password-confirm').value;
+            if (password.length < 8) {
+                showToast('Use a password with at least 8 characters.', 'error');
+                return;
+            }
+            if (password !== confirmation) {
+                showToast('The passwords do not match.', 'error');
+                return;
+            }
+
+            const button = document.getElementById('admin-password-recovery-save');
+            button.disabled = true;
+            try {
+                const { error } = await supabaseClient.auth.updateUser({ password });
+                if (error) throw error;
+                document.getElementById('admin-password-recovery-form').reset();
+                passwordRecoveryPending = false;
+                updateAdminAccess();
+                showToast(currentAdminUser
+                    ? 'Password updated. You are signed in.'
+                    : 'Password set. Sign in with your new password.', 'success');
+            } catch (error) {
+                console.error('Administrator password recovery failed.', error);
+                showToast(error.message || 'Could not set the new password. Please reopen the latest recovery email.', 'error');
             } finally {
                 button.disabled = false;
             }

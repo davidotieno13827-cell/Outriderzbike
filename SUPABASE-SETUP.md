@@ -22,7 +22,7 @@ The project URL is already saved in `supabase-config.js`:
 
 6. In **Authentication → URL Configuration**, set **Site URL** to `https://davidotieno13827-cell.github.io/Outriderzbike/`. Add that URL and `https://davidotieno13827-cell.github.io/Outriderzbike/**` to the allowed redirect URLs. The root page forwards invitation tokens to the shop app while preserving them.
 7. If an invitation link already expired or opened `localhost:3000`, delete/resend the invitation after correcting the URL settings.
-8. Open the invitation link. If it asks for an existing password, open the live shop, enter the admin email, and choose **Email me a password setup / reset link**. Follow the link emailed to you; it returns to the live shop where you can use **Set / Change Password** to create your password.
+8. Open the invitation link. If it asks for an existing password, open the live shop, enter the admin email, and choose **Email me a password setup / reset link**. Follow the link emailed to you; the shop will show fields to enter and confirm a new password.
 
 Only a signed-in account listed in `shop_admins` can see or use the admin dashboard. Visitors can read public bike listings, but cannot access customer IDs, hires, spare inventory, or make database changes.
 
