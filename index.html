@@ -420,6 +420,22 @@
                         Sign in to Admin
                     </button>
                 </form>
+                <button id="admin-forgot-password-button" type="button" onclick="showAdminPasswordResetForm()" class="w-full text-sm font-semibold text-zinc-300 underline decoration-zinc-600 underline-offset-4 transition-colors hover:text-outriderz-yellow">
+                    Forgot password?
+                </button>
+                <form id="admin-password-reset-form" onsubmit="handleAdminPasswordReset(event)" class="hidden space-y-4">
+                    <p class="text-sm text-zinc-400">Enter your administrator email and we’ll send a password reset link.</p>
+                    <label class="block text-xs font-black uppercase tracking-wider text-outriderz-yellow">
+                        Email
+                        <input id="admin-reset-email" type="email" autocomplete="username" required class="mt-2 w-full rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm font-semibold text-white">
+                    </label>
+                    <button id="admin-password-reset-submit" type="submit" class="w-full rounded-2xl bg-outriderz-yellow px-5 py-3 font-black uppercase tracking-wider text-black disabled:cursor-not-allowed disabled:opacity-50">
+                        Send password reset link
+                    </button>
+                    <button type="button" onclick="showAdminSignInForm()" class="w-full rounded-2xl border border-zinc-700 px-5 py-3 text-sm font-semibold text-zinc-300 transition-colors hover:border-outriderz-yellow hover:text-white">
+                        Back to sign in
+                    </button>
+                </form>
                 <form id="admin-password-recovery-form" onsubmit="handleAdminPasswordRecovery(event)" class="hidden space-y-4">
                     <p class="text-sm text-zinc-400">Choose a new password for your administrator account.</p>
                     <label class="block text-xs font-black uppercase tracking-wider text-outriderz-yellow">
@@ -870,6 +886,7 @@
         const passwordRecoveryStorageKey = 'outriders_admin_password_recovery';
         let passwordRecoveryPending = new URLSearchParams(window.location.hash.slice(1)).get('type') === 'recovery'
             || sessionStorage.getItem(passwordRecoveryStorageKey) === 'true';
+        let passwordResetRequestOpen = false;
         let selectedSaleBikeCategory = null;
         const collectionNames = ['bikes', 'spares', 'bookings', 'customers', 'sale_bikes'];
         const publicCollections = new Set(['bikes', 'sale_bikes']);
@@ -1112,8 +1129,23 @@
             document.getElementById('admin-inventory-shortcut').classList.toggle('hidden', !isAdmin || passwordRecoveryPending);
             document.getElementById('admin-workspace').classList.toggle('hidden', !isAdmin || passwordRecoveryPending);
             document.getElementById('admin-login-panel').classList.toggle('hidden', isAdmin && !passwordRecoveryPending);
-            document.getElementById('admin-login-form').classList.toggle('hidden', !supabaseClient || passwordRecoveryPending);
+            document.getElementById('admin-login-form').classList.toggle('hidden', !supabaseClient || passwordRecoveryPending || passwordResetRequestOpen);
+            document.getElementById('admin-forgot-password-button').classList.toggle('hidden', !supabaseClient || passwordRecoveryPending || passwordResetRequestOpen);
+            document.getElementById('admin-password-reset-form').classList.toggle('hidden', !supabaseClient || passwordRecoveryPending || !passwordResetRequestOpen);
             document.getElementById('admin-password-recovery-form').classList.toggle('hidden', !passwordRecoveryPending);
+        }
+
+        function showAdminPasswordResetForm() {
+            document.getElementById('admin-reset-email').value = document.getElementById('admin-email').value.trim();
+            passwordResetRequestOpen = true;
+            updateAdminAccess();
+            document.getElementById('admin-reset-email').focus();
+        }
+
+        function showAdminSignInForm() {
+            passwordResetRequestOpen = false;
+            updateAdminAccess();
+            document.getElementById('admin-email').focus();
         }
 
         function toggleAdminPasswordVisibility() {
@@ -1156,6 +1188,30 @@
                 document.getElementById('admin-password-visibility-toggle').setAttribute('aria-label', 'Show password');
                 document.getElementById('admin-password-visibility-toggle').setAttribute('aria-pressed', 'false');
                 document.getElementById('admin-password-visibility-icon').classList.replace('fa-eye-slash', 'fa-eye');
+                button.disabled = false;
+            }
+        }
+
+        async function handleAdminPasswordReset(event) {
+            event.preventDefault();
+            if (!supabaseClient || !passwordResetRequestOpen) {
+                showToast('Open Forgot password? before requesting a reset link.', 'error');
+                return;
+            }
+
+            const button = document.getElementById('admin-password-reset-submit');
+            button.disabled = true;
+            try {
+                const { error } = await supabaseClient.auth.resetPasswordForEmail(
+                    document.getElementById('admin-reset-email').value.trim(),
+                    { redirectTo: new URL(window.location.pathname, window.location.origin).toString() }
+                );
+                if (error) throw error;
+                showToast('If this email has an admin account, a password reset link has been sent. Check your inbox and spam folder.', 'success');
+            } catch (error) {
+                console.error('Administrator password reset request failed.', error);
+                showToast(error.message || 'Could not send a password reset link. Please try again.', 'error');
+            } finally {
                 button.disabled = false;
             }
         }
