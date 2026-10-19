@@ -55,6 +55,31 @@ The production domain is `outridersbikeshop.co.ke`, managed at Truehost Kenya. V
 
 The public navigation does not show an Admin button. Share the admin-entry bookmark with the shopkeeper privately; do not publish it on the public website. The bookmark is only a convenience, not an access control: only a signed-in account listed in `shop_admins` can use the admin dashboard. Visitors can read public bike listings, but cannot access customer IDs, hires, spare inventory, or make database changes; Supabase authentication and row-level security enforce those permissions.
 
+### Restrict password reset email to shop administrators
+
+The website asks Supabase Auth to send recovery emails. To ensure only users listed in `shop_admins` receive those emails, deploy and enable the Send Email Auth Hook in `supabase/functions/send-auth-email/index.ts`. The hook verifies Supabase's signed event and checks the user ID against `shop_admins` before sending any recovery email through Resend. Non-admin recovery requests receive no email. The same hook delivers other Supabase Auth messages (such as admin invitations) through Resend.
+
+1. Deploy the function from the repository root using the Supabase CLI:
+
+   ```text
+   npx supabase login
+   npx supabase link --project-ref foplmhiqlcwqisyibord
+   npx supabase functions deploy send-auth-email --no-verify-jwt
+   ```
+
+   The function verifies Supabase's webhook signature itself; do not remove that verification or publish the hook secret.
+2. In Supabase **Edge Functions → Secrets**, add:
+   - `RESEND_API_KEY`: the restricted Resend sending key for `auth.outridersbikeshop.co.ke`
+   - `AUTH_EMAIL_FROM`: `Outriders Bike Shop <no-reply@auth.outridersbikeshop.co.ke>`
+3. In Supabase **Authentication → Hooks**, configure the **Send Email** hook as an HTTP hook with URL:
+
+   `https://foplmhiqlcwqisyibord.supabase.co/functions/v1/send-auth-email`
+
+   Generate the hook signing secret. Add the exact secret shown by Supabase as `SEND_EMAIL_HOOK_SECRET` under **Edge Functions → Secrets**, then enable/save the hook. The function endpoint is intentionally deployed with JWT verification disabled because Auth authenticates the request using the signed webhook secret.
+4. With the Send Email hook enabled, it takes over Auth email delivery; Supabase SMTP settings are not used for Auth emails. Test one reset for an authorized admin and one for an account not listed in `shop_admins`: only the admin should receive a recovery email. Invitations and other Auth emails should continue to arrive through Resend.
+
+Until this hook is deployed and enabled, the website UI alone cannot enforce this restriction against direct requests to Supabase Auth. Keep the service-role/secret API key and hook signing secret in Supabase secrets only—never in this static website or Git.
+
 ## Update bike photos directly in Supabase
 
 1. Upload the photo in **Storage → shop-photos**. Photos in this bucket are publicly readable so the public website can display them.
