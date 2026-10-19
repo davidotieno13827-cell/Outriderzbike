@@ -662,8 +662,16 @@
                 </div>
                 <div>
                     <label class="block text-xs font-black text-outriderz-yellow uppercase tracking-wider mb-2">Bike Photo</label>
-                    <input type="file" id="new-bike-image" accept="image/*" capture="environment" onchange="previewBikeImage(event)" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-sm text-zinc-400 file:mr-3 file:rounded-lg file:border-0 file:bg-outriderz-yellow file:px-3 file:py-2 file:font-bold file:text-black">
-                    <p class="text-[11px] text-zinc-500 mt-2">Take a photo or choose one from this device. Published photos are stored online for the website.</p>
+                    <input type="file" id="new-bike-image" accept="image/*" capture="environment" onchange="previewBikeImage(event)" aria-label="Bike photo file" class="sr-only">
+                    <div class="flex flex-wrap gap-3">
+                        <button type="button" onclick="openBikeImagePicker('new-bike-image', 'camera')" class="inline-flex items-center gap-2 rounded-xl border border-zinc-700 px-4 py-3 text-sm font-bold text-zinc-700 transition-colors hover:border-outriderz-yellow hover:bg-outriderz-yellow/10 focus:outline-none focus:ring-2 focus:ring-outriderz-yellow">
+                            <i class="fa-solid fa-camera" aria-hidden="true"></i> Take photo
+                        </button>
+                        <button type="button" onclick="openBikeImagePicker('new-bike-image', 'gallery')" class="inline-flex items-center gap-2 rounded-xl border border-zinc-700 px-4 py-3 text-sm font-bold text-zinc-700 transition-colors hover:border-outriderz-yellow hover:bg-outriderz-yellow/10 focus:outline-none focus:ring-2 focus:ring-outriderz-yellow">
+                            <i class="fa-solid fa-images" aria-hidden="true"></i> Choose from gallery
+                        </button>
+                    </div>
+                    <p class="text-[11px] text-zinc-500 mt-2">Capture a new photo or choose an existing image from your device gallery. Published photos are stored online for the website.</p>
                     <img id="new-bike-image-preview" alt="Bike photo preview" class="hidden mt-3 h-36 w-full rounded-xl object-cover border border-zinc-800">
                 </div>
                 <div class="pt-2">
@@ -706,7 +714,16 @@
                 </div>
                 <div>
                     <label class="block text-xs font-black text-outriderz-yellow uppercase tracking-wider mb-2">Actual Bike Photo</label>
-                    <input id="sale-bike-image" type="file" accept="image/*" capture="environment" onchange="previewSaleBikeImage(event)" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-sm text-zinc-400 file:mr-3 file:rounded-lg file:border-0 file:bg-outriderz-yellow file:px-3 file:py-2 file:font-bold file:text-black">
+                    <input id="sale-bike-image" type="file" accept="image/*" capture="environment" onchange="previewSaleBikeImage(event)" aria-label="Sale bike photo file" class="sr-only">
+                    <div class="flex flex-wrap gap-3">
+                        <button type="button" onclick="openBikeImagePicker('sale-bike-image', 'camera')" class="inline-flex items-center gap-2 rounded-xl border border-zinc-700 px-4 py-3 text-sm font-bold text-zinc-700 transition-colors hover:border-outriderz-yellow hover:bg-outriderz-yellow/10 focus:outline-none focus:ring-2 focus:ring-outriderz-yellow">
+                            <i class="fa-solid fa-camera" aria-hidden="true"></i> Take photo
+                        </button>
+                        <button type="button" onclick="openBikeImagePicker('sale-bike-image', 'gallery')" class="inline-flex items-center gap-2 rounded-xl border border-zinc-700 px-4 py-3 text-sm font-bold text-zinc-700 transition-colors hover:border-outriderz-yellow hover:bg-outriderz-yellow/10 focus:outline-none focus:ring-2 focus:ring-outriderz-yellow">
+                            <i class="fa-solid fa-images" aria-hidden="true"></i> Choose from gallery
+                        </button>
+                    </div>
+                    <p class="mt-2 text-[11px] text-zinc-500">Capture a new photo or choose an existing image from your device gallery.</p>
                     <img id="sale-bike-image-preview" alt="Sale bike photo preview" class="hidden mt-3 h-36 w-full rounded-xl object-cover border border-zinc-800">
                 </div>
                 <button id="save-sale-bike-button" type="submit" class="w-full py-4 bg-outriderz-yellow hover:bg-outriderz-yellowDark text-black font-black uppercase text-sm tracking-wider rounded-2xl">Publish Sale Bike</button>
@@ -1468,6 +1485,24 @@
                 '"': '&quot;',
                 "'": '&#39;'
             })[character]);
+        }
+
+        function openBikeImagePicker(inputId, source) {
+            const input = document.getElementById(inputId);
+            if (!(input instanceof HTMLInputElement) || input.type !== 'file') {
+                showToast('The bike photo picker is unavailable. Please refresh the page and try again.', 'error');
+                return;
+            }
+
+            if (source === 'camera') input.setAttribute('capture', 'environment');
+            else if (source === 'gallery') input.removeAttribute('capture');
+            else {
+                showToast('Choose either the camera or device gallery for the bike photo.', 'error');
+                return;
+            }
+
+            input.value = '';
+            input.click();
         }
 
         function readBikeImage(file) {
