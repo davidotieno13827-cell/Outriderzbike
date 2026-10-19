@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        if (new URLSearchParams(window.location.search).has('admin')) {
+            document.documentElement.classList.add('admin-entry');
+        }
+    </script>
     <title>Outriders Bike Shop - Rental & Spares Management System</title>
     <link rel="icon" type="image/jpeg" href="outriderz-logo.jpe">
     <!-- Tailwind CSS CDN -->
@@ -87,6 +92,12 @@
         }
         #sale-bike-image-viewer .text-white {
             color: #fff !important;
+        }
+        html.admin-entry #view-home {
+            display: none !important;
+        }
+        html.admin-entry #view-admin {
+            display: block !important;
         }
         .text-zinc-300 {
             color: #3f3f46 !important;
@@ -383,13 +394,18 @@
             </div>
             <!-- Stats Grid -->
             <div id="admin-overview" class="hidden space-y-8">
-            <div class="flex flex-col items-end gap-3">
+            <div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <button id="admin-home-button" type="button" onclick="switchView('home')" class="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-700 px-4 py-2 text-xs font-black uppercase text-zinc-300 transition-colors hover:border-outriderz-yellow hover:text-white">
+                    <i class="fa-solid fa-house" aria-hidden="true"></i> Home
+                </button>
+                <div class="flex flex-col items-end gap-3">
                 <button id="admin-password-toggle" onclick="togglePasswordSetup()" class="rounded-xl border border-zinc-700 px-4 py-2 text-xs font-black uppercase text-zinc-300 hover:border-outriderz-yellow hover:text-white">Set / Change Password</button>
                 <form id="admin-password-form" onsubmit="handleAdminPasswordUpdate(event)" class="hidden w-full max-w-sm space-y-3 rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
                     <p id="admin-password-reset-description" class="text-sm text-zinc-300">A password reset link will be sent to your authorized administrator email.</p>
                     <button id="admin-password-save" type="submit" class="w-full rounded-xl bg-outriderz-yellow px-4 py-3 text-xs font-black uppercase text-black disabled:cursor-not-allowed disabled:opacity-50">Email me a password reset link</button>
                 </form>
                 <button id="admin-dashboard-exit-button" onclick="handleAdminSignOut()" class="rounded-xl border border-zinc-700 px-4 py-2 text-xs font-black uppercase text-zinc-300 hover:border-outriderz-red hover:text-white">Sign out</button>
+                </div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div class="bg-outriderz-zinc900 p-6 rounded-3xl border border-zinc-800 shadow-xl flex items-center space-x-5">
@@ -852,6 +868,8 @@
                 section.classList.remove('hidden');
                 adminWorkspace.appendChild(section);
             });
+            const adminEntryRequested = new URLSearchParams(window.location.search).has('admin');
+            if (adminEntryRequested) switchView('admin');
             await initializeCloud();
             renderSaleBikes();
             renderRentals();
@@ -859,9 +877,6 @@
             renderAdmin();
             updateBadges();
             checkLowStockAlerts();
-            if (new URLSearchParams(window.location.search).has('admin')) {
-                switchView('admin');
-            }
         };
         window.setInterval(updateActiveRentalTimers, 1000);
 
@@ -1324,6 +1339,7 @@
                 document.getElementById('view-admin').classList.remove('hidden');
                 renderAdmin();
             } else {
+                document.documentElement.classList.remove('admin-entry');
                 document.getElementById('view-home').classList.remove('hidden');
                 renderSaleBikes();
             }
