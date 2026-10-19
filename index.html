@@ -85,6 +85,9 @@
         .bg-gradient-to-r.text-white .text-zinc-300 {
             color: #d4d4d8 !important;
         }
+        #sale-bike-image-viewer .text-white {
+            color: #fff !important;
+        }
         .text-zinc-300 {
             color: #3f3f46 !important;
         }
@@ -689,7 +692,9 @@
                 </div>
                 <div>
                     <label class="block text-xs font-black text-outriderz-yellow uppercase tracking-wider mb-2" for="sale-bike-category">Category</label>
-                    <input id="sale-bike-category" type="text" required maxlength="40" placeholder="e.g. Shimano, Type B" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-outriderz-yellow">
+                    <input id="sale-bike-category" type="text" list="sale-bike-category-options" required maxlength="40" placeholder="Select or type e.g. Mountain bike" class="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-outriderz-yellow">
+                    <datalist id="sale-bike-category-options"></datalist>
+                    <p class="mt-2 text-[11px] text-zinc-500">Use the same category name for similar bikes so they appear together in one group.</p>
                 </div>
                 <div>
                     <label class="block text-xs font-black text-outriderz-yellow uppercase tracking-wider mb-2">Description</label>
@@ -706,6 +711,16 @@
                 </div>
                 <button id="save-sale-bike-button" type="submit" class="w-full py-4 bg-outriderz-yellow hover:bg-outriderz-yellowDark text-black font-black uppercase text-sm tracking-wider rounded-2xl">Publish Sale Bike</button>
             </form>
+        </div>
+    </div>
+
+    <div id="sale-bike-image-viewer" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/90 p-4" role="dialog" aria-modal="true" aria-label="Enlarged sale bike photo" aria-hidden="true" onclick="if (event.target === this) closeSaleBikeImageViewer()">
+        <div class="relative flex max-h-full max-w-6xl flex-col items-center gap-3" onclick="event.stopPropagation()">
+            <button id="sale-bike-image-viewer-close" type="button" aria-label="Close enlarged bike photo" onclick="closeSaleBikeImageViewer()" class="absolute -top-12 right-0 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-outriderz-yellow">
+                <i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i>
+            </button>
+            <img id="sale-bike-image-viewer-image" alt="" onerror="this.onerror=null; this.src='https://placehold.co/1200x900/18181b/facc15?text=Bike+Photo'" class="max-h-[82vh] max-w-[94vw] rounded-xl object-contain shadow-2xl">
+            <p id="sale-bike-image-viewer-title" class="text-center text-sm font-bold text-white"></p>
         </div>
     </div>
 
@@ -881,6 +896,9 @@
             || sessionStorage.getItem(passwordRecoveryStorageKey) === 'true';
         let passwordResetRequestOpen = false;
         let selectedSaleBikeCategory = null;
+        const saleBikeCarouselIndexes = new Map();
+        let saleBikeImageTrigger = null;
+        let previousSaleBikeBodyOverflow = '';
         const collectionNames = ['bikes', 'spares', 'bookings', 'customers', 'sale_bikes'];
         const publicCollections = new Set(['bikes', 'sale_bikes']);
         const cloudSnapshots = Object.fromEntries(collectionNames.map(name => [name, []]));
@@ -1635,6 +1653,7 @@
             const visibleBikes = saleBikes.filter(bike => selectedSaleBikeCategory === null
                 || (String(bike.category || '').trim() || 'Uncategorized').toLocaleLowerCase() === selectedSaleBikeCategory.toLocaleLowerCase());
             grid.innerHTML = '';
+            grid.className = 'grid grid-cols-1 gap-6';
             emptyMessage.classList.toggle('hidden', saleBikes.length > 0);
             if (saleBikes.length > 0 && visibleBikes.length === 0) {
                 emptyMessage.innerText = `No bikes are listed in ${selectedSaleBikeCategory} right now.`;
@@ -1643,26 +1662,123 @@
                 emptyMessage.innerText = 'No bikes are listed for sale right now. Please check back soon.';
             }
 
+            const bikesByCategory = new Map();
             visibleBikes.forEach(bike => {
-                const card = document.createElement('article');
-                card.className = 'overflow-hidden rounded-2xl border border-zinc-800 bg-white shadow-lg';
-                card.innerHTML = `
-                    <img src="${escapeHTML(bike.image)}" alt="${escapeHTML(bike.name)}" onerror="this.src='https://placehold.co/600x400/18181b/facc15?text=Bike+Photo'" class="h-56 w-full object-cover">
-                    <div class="p-5 space-y-3">
-                        <div class="flex items-start justify-between gap-3">
-                            <h3 class="font-black uppercase text-lg text-zinc-900">${escapeHTML(bike.name)}</h3>
-                            <span class="shrink-0 font-black text-outriderz-red">${Number(bike.price).toLocaleString()} KES</span>
+                const category = String(bike.category || '').trim() || 'Uncategorized';
+                const categoryKey = category.toLocaleLowerCase();
+                if (!bikesByCategory.has(categoryKey)) bikesByCategory.set(categoryKey, { category, bikes: [] });
+                bikesByCategory.get(categoryKey).bikes.push(bike);
+            });
+
+            bikesByCategory.forEach(({ category, bikes: categoryBikes }, categoryKey) => {
+                let currentIndex = saleBikeCarouselIndexes.get(categoryKey) || 0;
+                currentIndex %= categoryBikes.length;
+                saleBikeCarouselIndexes.set(categoryKey, currentIndex);
+
+                const group = document.createElement('section');
+                group.className = 'space-y-4 rounded-2xl border border-zinc-800 bg-white p-4 shadow-sm sm:p-6';
+                group.setAttribute('aria-label', `${category} category`);
+                group.innerHTML = `
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <h3 class="text-lg font-black uppercase tracking-wide text-zinc-900">${escapeHTML(category)}</h3>
+                            <p class="text-xs font-semibold text-zinc-500">${categoryBikes.length} ${categoryBikes.length === 1 ? 'bike' : 'bikes'} in this group</p>
                         </div>
-                        <span class="inline-flex rounded-full bg-zinc-100 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-zinc-600">${escapeHTML(String(bike.category || '').trim() || 'Uncategorized')}</span>
-                        <p class="text-sm text-zinc-600 leading-relaxed">${escapeHTML(bike.description)}</p>
-                        <a href="https://wa.me/254700425515?text=${encodeURIComponent(`Hello, I am interested in the ${bike.name} listed for ${Number(bike.price).toLocaleString()} KES.`)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-black uppercase text-white">
-                            <i class="fa-brands fa-whatsapp text-base"></i> Enquire on WhatsApp
-                        </a>
+                        <div class="flex items-center gap-2">
+                            <span data-bike-position aria-live="polite" class="min-w-12 text-center text-xs font-black text-zinc-600">${currentIndex + 1} / ${categoryBikes.length}</span>
+                            <button type="button" data-sale-bike-previous aria-label="Previous ${escapeHTML(category)}" class="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-300 text-zinc-700 transition-colors hover:border-outriderz-yellow hover:bg-outriderz-yellow focus:outline-none focus:ring-2 focus:ring-outriderz-yellow" ${categoryBikes.length === 1 ? 'disabled' : ''}>
+                                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                            </button>
+                            <button type="button" data-sale-bike-next aria-label="Next ${escapeHTML(category)}" class="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-300 text-zinc-700 transition-colors hover:border-outriderz-yellow hover:bg-outriderz-yellow focus:outline-none focus:ring-2 focus:ring-outriderz-yellow" ${categoryBikes.length === 1 ? 'disabled' : ''}>
+                                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                            </button>
+                        </div>
                     </div>
+                    <div data-category-bike-card class="mx-auto w-full max-w-3xl"></div>
                 `;
-                grid.appendChild(card);
+
+                const renderCurrentBike = () => {
+                    const bike = categoryBikes[currentIndex];
+                    const cardContainer = group.querySelector('[data-category-bike-card]');
+                    const card = document.createElement('article');
+                    card.className = 'overflow-hidden rounded-2xl border border-zinc-800 bg-white shadow-lg';
+                    card.innerHTML = `
+                        <button type="button" aria-label="View a larger photo of ${escapeHTML(bike.name)}" class="sale-bike-image-trigger group relative block w-full cursor-zoom-in overflow-hidden focus:outline-none focus:ring-4 focus:ring-inset focus:ring-outriderz-yellow">
+                            <img src="${escapeHTML(bike.image)}" alt="${escapeHTML(bike.name)}" onerror="this.src='https://placehold.co/600x400/18181b/facc15?text=Bike+Photo'" class="h-56 w-full object-cover transition-transform duration-300 group-hover:scale-105 sm:h-80">
+                            <span class="absolute inset-0 flex items-center justify-center bg-black/0 text-white opacity-0 transition-all group-hover:bg-black/35 group-hover:opacity-100 group-focus-visible:bg-black/35 group-focus-visible:opacity-100">
+                                <span class="rounded-full bg-black/65 px-4 py-2 text-xs font-bold"><i class="fa-solid fa-magnifying-glass-plus mr-2" aria-hidden="true"></i>View full photo</span>
+                            </span>
+                        </button>
+                        <div class="space-y-3 p-5">
+                            <div class="flex items-start justify-between gap-3">
+                                <h4 class="text-lg font-black uppercase text-zinc-900">${escapeHTML(bike.name)}</h4>
+                                <span class="shrink-0 font-black text-outriderz-red">${Number(bike.price).toLocaleString()} KES</span>
+                            </div>
+                            <p class="text-sm leading-relaxed text-zinc-600">${escapeHTML(bike.description)}</p>
+                            <a href="https://wa.me/254700425515?text=${encodeURIComponent(`Hello, I am interested in the ${bike.name} listed for ${Number(bike.price).toLocaleString()} KES.`)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-black uppercase text-white">
+                                <i class="fa-brands fa-whatsapp text-base"></i> Enquire on WhatsApp
+                            </a>
+                        </div>
+                    `;
+                    card.querySelector('.sale-bike-image-trigger').addEventListener('click', () => openSaleBikeImageViewer(bike.id));
+                    cardContainer.replaceChildren(card);
+                    group.querySelector('[data-bike-position]').textContent = `${currentIndex + 1} / ${categoryBikes.length}`;
+                };
+
+                const changeBike = direction => {
+                    currentIndex = (currentIndex + direction + categoryBikes.length) % categoryBikes.length;
+                    saleBikeCarouselIndexes.set(categoryKey, currentIndex);
+                    renderCurrentBike();
+                };
+                group.querySelector('[data-sale-bike-previous]').addEventListener('click', () => changeBike(-1));
+                group.querySelector('[data-sale-bike-next]').addEventListener('click', () => changeBike(1));
+                renderCurrentBike();
+                grid.appendChild(group);
             });
         }
+
+        function openSaleBikeImageViewer(bikeId) {
+            const bike = saleBikes.find(item => String(item.id) === String(bikeId));
+            if (!bike) {
+                showToast('That sale bike photo is no longer available.', 'error');
+                return;
+            }
+
+            const viewer = document.getElementById('sale-bike-image-viewer');
+            const image = document.getElementById('sale-bike-image-viewer-image');
+            saleBikeImageTrigger = document.activeElement;
+            previousSaleBikeBodyOverflow = document.body.style.overflow;
+            image.src = bike.image;
+            image.alt = `Full-size photo of ${bike.name}`;
+            document.getElementById('sale-bike-image-viewer-title').textContent = bike.name;
+            viewer.classList.remove('hidden');
+            viewer.classList.add('flex');
+            viewer.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+            document.getElementById('sale-bike-image-viewer-close').focus();
+        }
+
+        function closeSaleBikeImageViewer() {
+            const viewer = document.getElementById('sale-bike-image-viewer');
+            if (viewer.classList.contains('hidden')) return;
+
+            viewer.classList.add('hidden');
+            viewer.classList.remove('flex');
+            viewer.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = previousSaleBikeBodyOverflow;
+            if (saleBikeImageTrigger?.isConnected) saleBikeImageTrigger.focus();
+            saleBikeImageTrigger = null;
+        }
+
+        document.addEventListener('keydown', event => {
+            const viewer = document.getElementById('sale-bike-image-viewer');
+            if (viewer.classList.contains('hidden')) return;
+            if (event.key === 'Escape') closeSaleBikeImageViewer();
+            else if (event.key === 'Tab') {
+                event.preventDefault();
+                document.getElementById('sale-bike-image-viewer-close').focus();
+            }
+        });
 
         // Booking Modal (1 KES / Minute)
         function openBookingModal(bikeId) {
@@ -2218,6 +2334,19 @@
         function openSaleBikeModal() {
             document.getElementById('sale-bike-form').reset();
             document.getElementById('edit-sale-bike-id').value = '';
+            const categoryOptions = document.getElementById('sale-bike-category-options');
+            const categories = new Map([['mountain bike', 'Mountain bike']]);
+            saleBikes.forEach(bike => {
+                const category = String(bike.category || '').trim();
+                if (category && !categories.has(category.toLocaleLowerCase())) {
+                    categories.set(category.toLocaleLowerCase(), category);
+                }
+            });
+            categoryOptions.replaceChildren(...[...categories.values()].map(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                return option;
+            }));
             document.getElementById('sale-bike-image-preview').classList.add('hidden');
             document.getElementById('sale-bike-image-preview').src = '';
             document.getElementById('sale-bike-image').required = true;
