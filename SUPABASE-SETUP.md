@@ -1,12 +1,14 @@
 # Supabase setup
 
-The website stays on GitHub Pages. Supabase provides email/password administrator sign-in and shared shop data. The owner will update photos directly in the Supabase dashboard instead of using a photo-posting form on the website.
+The website stays on GitHub Pages. Supabase provides email/password administrator sign-in, shared shop data, and public bike photos. Signed-in shop administrators can add and edit sale-bike listings, upload a photo gallery, and enter bike details from the website's Admin area.
 
 The project URL is already saved in `supabase-config.js`:
 
 `https://foplmhiqlcwqisyibord.supabase.co`
 
-When adding or editing a bike for sale in Admin, enter its category (for example, `Shimano` or `Type B`). The public home page creates category filter buttons from the listed bikes, so visitors can show all bikes or filter to one category. Existing sale listings without a category appear under `Uncategorized`.
+When adding or editing a bike for sale in Admin, enter its category (for example, `Mountain bike`) and optional bike details one per line (for example, `Brakes: Disc brakes`). Upload up to 8 photos; the first is used as the cover and visitors can tap the gallery photos to expand them. The public home page creates category filter buttons from the listed bikes, so visitors can show all bikes or filter to one category. Existing sale listings without a category appear under `Uncategorized`.
+
+Sale-bike listings record and display the original posting date; editing a listing keeps that date. Admin customer records show the registration date, and each ride row shows its start and end date/time. New customer registration time is captured when the first hire starts. Older records use their saved registration or earliest ride date where available; otherwise the date is shown as not recorded.
 
 ## Secure the custom domain
 
@@ -80,10 +82,10 @@ The website asks Supabase Auth to send recovery emails. To ensure only users lis
 
 Until this hook is deployed and enabled, the website UI alone cannot enforce this restriction against direct requests to Supabase Auth. Keep the service-role/secret API key and hook signing secret in Supabase secrets only—never in this static website or Git.
 
-## Update bike photos directly in Supabase
+## Manage bike photos
 
-1. Upload the photo in **Storage → shop-photos**. Photos in this bucket are publicly readable so the public website can display them.
-2. Copy the photo's public URL.
-3. In **Table Editor → shop_content**, find the bike row (`collection` is `bikes` or `sale_bikes`) and update `data.image` to that URL. The website's public listings refresh live.
+Sale-bike photos should normally be managed through the Admin listing form. The website uploads them to the public-readable `shop-photos` bucket and stores their URLs in each listing's `data.images` array; `data.image` remains the cover photo for compatibility.
+
+For a one-off manual update, upload the photo in **Storage → shop-photos**, copy its public URL, then in **Table Editor → shop_content** find the relevant bike row (`collection` is `bikes` or `sale_bikes`) and update `data.image`. For a sale bike with a gallery, also update `data.images` to a JSON array of public URLs, with the cover photo first. The website's public listings refresh live.
 
 On the first authorized sign-in, the existing local bikes, spares, sale listings, customers, and hires are copied into Supabase. Customer and hire browser caches are then removed. The SQL policies keep customer IDs, hire records, and spare inventory admin-only.
