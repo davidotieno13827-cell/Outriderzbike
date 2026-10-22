@@ -663,7 +663,7 @@
                             <i class="fa-solid fa-images" aria-hidden="true"></i> Choose from gallery
                         </button>
                     </div>
-                    <p class="mt-2 text-[11px] text-zinc-500">Add up to 8 photos: full bike, front, rear, tires, seat, brakes, gears, and any wear. The first photo is the cover.</p>
+                    <p class="mt-2 text-[11px] text-zinc-500">Add up to 8 photos: full bike, front, rear, tires, seat, brakes, gears, and any wear. To take several photos, tap “Take photo” again after each capture. Every capture is added; the first is the cover.</p>
                     <div id="sale-bike-image-preview" class="hidden mt-3 grid grid-cols-2 gap-2"></div>
                 </div>
                 <button id="save-sale-bike-button" type="submit" class="w-full py-4 bg-outriderz-yellow hover:bg-outriderz-yellowDark text-black font-black uppercase text-sm tracking-wider rounded-2xl">Publish Sale Bike</button>
@@ -875,6 +875,8 @@
         let currentSaleBikePhotos = [];
         let currentSaleBikePhotoIndex = 0;
         let currentSaleBikeName = '';
+        let saleBikeDraftPhotos = [];
+        let saleBikePhotoReadInProgress = false;
         let saleBikeDetailsTrigger = null;
         let previousSaleBikeDetailsOverflow = '';
         const collectionNames = ['bikes', 'spares', 'bookings', 'customers', 'sale_bikes'];
@@ -1533,22 +1535,25 @@
 
         function previewSaleBikeImage(event) {
             const files = Array.from(event.target.files || []);
-            const preview = document.getElementById('sale-bike-image-preview');
-            if (files.length > 8) {
+            event.target.value = '';
+            if (saleBikePhotoReadInProgress) {
+                showToast('Wait for the selected bike photos to finish processing.', 'error');
+                return;
+            }
+            if (saleBikeDraftPhotos.length + files.length > 8) {
                 event.target.value = '';
-                preview.replaceChildren();
-                preview.classList.add('hidden');
-                showToast('Choose no more than 8 photos for one bike listing.', 'error');
+                showToast(`You can add ${Math.max(0, 8 - saleBikeDraftPhotos.length)} more photo${8 - saleBikeDraftPhotos.length === 1 ? '' : 's'} to this listing.`, 'error');
                 return;
             }
             if (files.length === 0) return;
+            saleBikePhotoReadInProgress = true;
             Promise.all(files.map(readBikeImage)).then(images => {
-                renderSaleBikeImagePreviews(images);
+                saleBikeDraftPhotos.push(...images);
+                renderSaleBikeImagePreviews(saleBikeDraftPhotos);
             }).catch(error => {
-                event.target.value = '';
-                preview.replaceChildren();
-                preview.classList.add('hidden');
                 showToast(error.message, 'error');
+            }).finally(() => {
+                saleBikePhotoReadInProgress = false;
             });
         }
 
@@ -1557,7 +1562,7 @@
             preview.replaceChildren();
             images.forEach((image, index) => {
                 const item = document.createElement('div');
-                item.className = 'relative';
+                item.className = 'relative overflow-hidden rounded-xl';
                 const photo = document.createElement('img');
                 photo.src = image;
                 photo.alt = `Bike photo ${index + 1}${index === 0 ? ', cover photo' : ''}`;
@@ -1565,7 +1570,16 @@
                 const label = document.createElement('span');
                 label.className = 'absolute bottom-2 left-2 rounded-full bg-black/75 px-2 py-1 text-[10px] font-bold text-white';
                 label.textContent = index === 0 ? 'Cover' : `Photo ${index + 1}`;
-                item.append(photo, label);
+                const removeButton = document.createElement('button');
+                removeButton.type = 'button';
+                removeButton.className = 'absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/75 text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-outriderz-yellow';
+                removeButton.setAttribute('aria-label', `Remove photo ${index + 1}`);
+                removeButton.innerHTML = '<i class="fa-solid fa-xmark" aria-hidden="true"></i>';
+                removeButton.addEventListener('click', () => {
+                    saleBikeDraftPhotos.splice(index, 1);
+                    renderSaleBikeImagePreviews(saleBikeDraftPhotos);
+                });
+                item.append(photo, label, removeButton);
                 preview.appendChild(item);
             });
             preview.classList.toggle('hidden', images.length === 0);
@@ -2397,6 +2411,8 @@
         function openSaleBikeModal() {
             document.getElementById('sale-bike-form').reset();
             document.getElementById('edit-sale-bike-id').value = '';
+            saleBikeDraftPhotos = [];
+            saleBikePhotoReadInProgress = false;
             const categoryOptions = document.getElementById('sale-bike-category-options');
             const categories = new Map([['mountain bike', 'Mountain bike']]);
             saleBikes.forEach(bike => {
@@ -2413,7 +2429,7 @@
             document.getElementById('sale-bike-image-preview').classList.add('hidden');
             document.getElementById('sale-bike-image-preview').replaceChildren();
             document.getElementById('sale-bike-specifications').value = '';
-            document.getElementById('sale-bike-image').required = true;
+            document.getElementById('sale-bike-image').required = false;
             document.getElementById('save-sale-bike-button').innerText = 'Publish Sale Bike';
             document.getElementById('sale-bike-modal').classList.remove('hidden');
             document.getElementById('sale-bike-modal').classList.add('flex');
@@ -2435,7 +2451,9 @@
             document.getElementById('sale-bike-price').value = bike.price;
             document.getElementById('sale-bike-image').value = '';
             document.getElementById('sale-bike-image').required = false;
-            renderSaleBikeImagePreviews(getSaleBikePhotos(bike));
+            saleBikeDraftPhotos = getSaleBikePhotos(bike);
+            saleBikePhotoReadInProgress = false;
+            renderSaleBikeImagePreviews(saleBikeDraftPhotos);
             document.getElementById('save-sale-bike-button').innerText = 'Save Changes';
             document.getElementById('sale-bike-modal').classList.remove('hidden');
             document.getElementById('sale-bike-modal').classList.add('flex');
@@ -2445,21 +2463,22 @@
             event.preventDefault();
             const bikeId = document.getElementById('edit-sale-bike-id').value;
             const existingBike = bikeId ? saleBikes.find(bike => bike.id === bikeId) : null;
-            const files = Array.from(document.getElementById('sale-bike-image').files || []);
-            if (files.length > 8) {
+            if (saleBikePhotoReadInProgress) {
+                showToast('Wait for the selected bike photos to finish processing.', 'error');
+                return;
+            }
+            if (saleBikeDraftPhotos.length > 8) {
                 showToast('Choose no more than 8 photos for one bike listing.', 'error');
                 return;
             }
-            if (!existingBike && files.length === 0) {
+            if (!existingBike && saleBikeDraftPhotos.length === 0) {
                 showToast('Choose at least one photo of the bike for sale.', 'error');
                 return;
             }
             const submitButton = document.getElementById('save-sale-bike-button');
             submitButton.disabled = true;
             try {
-                const images = files.length > 0
-                    ? await Promise.all(files.map(readBikeImage))
-                    : getSaleBikePhotos(existingBike);
+                const images = [...saleBikeDraftPhotos];
                 const name = document.getElementById('sale-bike-name').value.trim();
                 const category = document.getElementById('sale-bike-category').value.trim();
                 const nextBike = {

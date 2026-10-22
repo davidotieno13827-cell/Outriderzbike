@@ -6,7 +6,7 @@ The project URL is already saved in `supabase-config.js`:
 
 `https://foplmhiqlcwqisyibord.supabase.co`
 
-When adding or editing a bike for sale in Admin, enter its category (for example, `Mountain bike`) and optional bike details one per line (for example, `Brakes: Disc brakes`). Upload up to 8 photos; the first is used as the cover and visitors can tap the gallery photos to expand them. The public home page creates category filter buttons from the listed bikes, so visitors can show all bikes or filter to one category. Existing sale listings without a category appear under `Uncategorized`.
+When adding or editing a bike for sale in Admin, enter its category (for example, `Mountain bike`) and optional bike details one per line (for example, `Brakes: Disc brakes`). Add up to 8 photos from the device gallery, or use **Take photo** again after each camera capture to add multiple angles; new photos are appended to the current selection, and the first is used as the cover. Visitors can tap the gallery photos to expand them. The public home page creates category filter buttons from the listed bikes, so visitors can show all bikes or filter to one category. Existing sale listings without a category appear under `Uncategorized`.
 
 Sale-bike listings record and display the original posting date; editing a listing keeps that date. Admin customer records show the registration date, and each ride row shows its start and end date/time. New customer registration time is captured when the first hire starts. Older records use their saved registration or earliest ride date where available; otherwise the date is shown as not recorded.
 
