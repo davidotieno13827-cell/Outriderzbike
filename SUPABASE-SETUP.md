@@ -42,8 +42,8 @@ The production domain is `outridersbikeshop.co.ke`, managed at Truehost Kenya. V
 1. In Supabase **Project Settings → API**, copy the public `anon` / `publishable` key into `anonKey` in `supabase-config.js`. This key is intended for browser use. **Never use or publish the `service_role` key.**
 2. Open **SQL Editor** and run the contents of `supabase-setup.sql`.
 3. In **Authentication → Providers → Email**, leave email/password sign-in enabled and turn off public sign-ups.
-4. Invite `davidotieno13827@gmail.com` in **Authentication → Users**. The owner will create their password from the website after accepting the invitation; do not put a password in the website source.
-5. After the invite, run this in the SQL Editor to grant the owner administrator access:
+4. Invite each administrator in **Authentication → Users**. Keep public sign-ups disabled; invitation is how an additional administrator receives an account. Each invited user creates their own password from the website after accepting the invitation; do not put passwords in the website source.
+5. After inviting the owner, run this in the SQL Editor to grant the owner administrator access:
 
    ```sql
    insert into public.shop_admins (user_id)
@@ -51,9 +51,18 @@ The production domain is `outridersbikeshop.co.ke`, managed at Truehost Kenya. V
    on conflict do nothing;
    ```
 
-6. Until the custom domain has HTTPS, keep the current GitHub Pages URL as Supabase's **Site URL** and an allowed redirect. After HTTPS is enabled, follow **Secure the custom domain** above and change the Site URL.
-7. If an invitation link already expired or opened `localhost:3000`, delete/resend the invitation after correcting the URL settings.
-8. Open the invitation link and complete the password setup. If an administrator forgets their password, open the private admin sign-in page, choose **Forgot password?**, enter the admin email, and submit. Open the newest link in the email; the shop will show fields to enter and confirm a new password. Recovery links are single-use and expire, so request a fresh one if a link has already been opened or is no longer valid.
+6. To add another administrator, invite their email in **Authentication → Users**, then grant dashboard access in the SQL Editor using that exact email. For example:
+
+   ```sql
+   insert into public.shop_admins (user_id)
+   select id from auth.users where lower(email) = lower('Mosesnjenga98@gmail.com')
+   on conflict do nothing;
+   ```
+
+   The person must first exist in Supabase Auth. This adds only their Auth user ID to the administrator allowlist; it does not create an account or set a password.
+7. Until the custom domain has HTTPS, keep the current GitHub Pages URL as Supabase's **Site URL** and an allowed redirect. After HTTPS is enabled, follow **Secure the custom domain** above and change the Site URL.
+8. If an invitation link already expired or opened `localhost:3000`, delete/resend the invitation after correcting the URL settings.
+9. Open the invitation link and complete the password setup. If an administrator forgets their password, open the private admin sign-in page, choose **Forgot password?**, enter the admin email, and submit. Open the newest link in the email; the shop will show fields to enter and confirm a new password. Recovery links are single-use and expire, so request a fresh one if a link has already been opened or is no longer valid.
 
 The public navigation does not show an Admin button. Share the admin-entry bookmark with the shopkeeper privately; do not publish it on the public website. The bookmark is only a convenience, not an access control: only a signed-in account listed in `shop_admins` can use the admin dashboard. Visitors can read public bike listings, but cannot access customer IDs, hires, spare inventory, or make database changes; Supabase authentication and row-level security enforce those permissions.
 
