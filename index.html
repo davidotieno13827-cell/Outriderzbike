@@ -865,6 +865,9 @@
         let saleBikes = legacyState.sale_bikes;
         let supabaseClient = null;
         let currentAdminUser = null;
+        const adminInactivityLimitMs = 5 * 60 * 1000;
+        let adminInactivityTimeoutId = null;
+        let adminLastActivityAt = 0;
         const passwordRecoveryStorageKey = 'outriders_admin_password_recovery';
         const authLinkType = new URLSearchParams(window.location.hash.slice(1)).get('type');
         const inviteLinkOpened = authLinkType === 'invite';
@@ -971,6 +974,7 @@
                         updateAdminAccess();
                     } else if (event === 'SIGNED_OUT') {
                         currentAdminUser = null;
+                        clearAdminInactivityTimer();
                         passwordRecoveryPending = false;
                         sessionStorage.removeItem(passwordRecoveryStorageKey);
                         bookings = [];
@@ -1138,6 +1142,7 @@
                 throw new Error('This account is not authorized as a shop administrator.');
             }
             currentAdminUser = user;
+            resetAdminInactivityTimer();
             bookings = legacyState.bookings.map(booking => ({
                 ...booking,
                 startedAt: booking.startedAt || booking.createdAt || new Date().toISOString()
@@ -1148,6 +1153,66 @@
             updateAdminAccess();
             renderAllViews();
         }
+
+        function clearAdminInactivityTimer() {
+            if (adminInactivityTimeoutId !== null) {
+                window.clearTimeout(adminInactivityTimeoutId);
+                adminInactivityTimeoutId = null;
+            }
+            adminLastActivityAt = 0;
+        }
+
+        function resetAdminInactivityTimer() {
+            if (!currentAdminUser) return;
+            adminLastActivityAt = Date.now();
+            if (adminInactivityTimeoutId !== null) {
+                window.clearTimeout(adminInactivityTimeoutId);
+            }
+            adminInactivityTimeoutId = window.setTimeout(enforceAdminInactivityTimeout, adminInactivityLimitMs);
+        }
+
+        async function enforceAdminInactivityTimeout() {
+            if (!currentAdminUser) {
+                clearAdminInactivityTimer();
+                return;
+            }
+            const remainingMs = adminInactivityLimitMs - (Date.now() - adminLastActivityAt);
+            if (remainingMs > 0) {
+                if (adminInactivityTimeoutId !== null) {
+                    window.clearTimeout(adminInactivityTimeoutId);
+                }
+                adminInactivityTimeoutId = window.setTimeout(enforceAdminInactivityTimeout, remainingMs);
+                return;
+            }
+
+            try {
+                const { error } = await supabaseClient.auth.signOut({ scope: 'local' });
+                if (error) throw error;
+                currentAdminUser = null;
+                bookings = [];
+                customers = [];
+                clearAdminInactivityTimer();
+                updateAdminAccess();
+                renderAllViews();
+                showToast('Signed out after 5 minutes of inactivity. Sign in again to continue.', 'info');
+            } catch (error) {
+                console.error('Automatic administrator sign-out failed.', error);
+                showToast(`Automatic sign-out failed: ${error.message}`, 'error');
+                resetAdminInactivityTimer();
+            }
+        }
+
+        ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(eventName => {
+            document.addEventListener(eventName, resetAdminInactivityTimer, { passive: true });
+        });
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden || !currentAdminUser) return;
+            if (Date.now() - adminLastActivityAt >= adminInactivityLimitMs) {
+                enforceAdminInactivityTimeout();
+            } else {
+                resetAdminInactivityTimer();
+            }
+        });
 
         function updateAdminAccess() {
             const isAdmin = Boolean(currentAdminUser);
@@ -1324,6 +1389,7 @@
                 }
             }
             currentAdminUser = null;
+            clearAdminInactivityTimer();
             bookings = [];
             customers = [];
             updateAdminAccess();
