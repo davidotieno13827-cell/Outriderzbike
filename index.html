@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>
-        if (new URLSearchParams(window.location.search).has('admin')) {
+        const initialAuthLinkType = new URLSearchParams(window.location.hash.slice(1)).get('type');
+        if (new URLSearchParams(window.location.search).has('admin') || initialAuthLinkType === 'invite' || initialAuthLinkType === 'recovery') {
             document.documentElement.classList.add('admin-entry');
         }
     </script>
@@ -865,7 +866,9 @@
         let supabaseClient = null;
         let currentAdminUser = null;
         const passwordRecoveryStorageKey = 'outriders_admin_password_recovery';
-        let passwordRecoveryPending = new URLSearchParams(window.location.hash.slice(1)).get('type') === 'recovery'
+        const authLinkType = new URLSearchParams(window.location.hash.slice(1)).get('type');
+        const inviteLinkOpened = authLinkType === 'invite';
+        let passwordRecoveryPending = authLinkType === 'recovery'
             || sessionStorage.getItem(passwordRecoveryStorageKey) === 'true';
         let passwordResetRequestOpen = false;
         let selectedSaleBikeCategory = null;
@@ -935,7 +938,9 @@
         async function initializeCloud() {
             const status = document.getElementById('backend-status-message');
             const loginButton = document.getElementById('admin-login-button');
-            const recoveryLinkOpened = passwordRecoveryPending
+            const recoveryLinkOpened = authLinkType === 'recovery' || (passwordRecoveryPending && !inviteLinkOpened);
+            const setupLinkOpened = passwordRecoveryPending
+                || inviteLinkOpened
                 || new URLSearchParams(window.location.hash.slice(1)).get('type') === 'recovery';
             updateAdminAccess();
             if (!isSupabaseConfigured()) {
@@ -976,19 +981,40 @@
                 await loadCloudCollections(false);
                 const { data, error } = await supabaseClient.auth.getSession();
                 if (error) throw error;
-                if (data.session && (passwordRecoveryPending || recoveryLinkOpened)) {
+                if (data.session && setupLinkOpened) {
                     passwordRecoveryPending = true;
-                    status.innerText = 'Set a new password for your administrator account below.';
+                    sessionStorage.setItem(passwordRecoveryStorageKey, 'true');
+                    document.getElementById('admin-email').value = data.session.user.email || '';
+                    if (inviteLinkOpened) {
+                        const { data: isAdmin, error: authorizationError } = await supabaseClient.rpc('is_shop_admin');
+                        if (authorizationError) throw authorizationError;
+                        if (!isAdmin) {
+                            await supabaseClient.auth.signOut();
+                            throw new Error('This account is not authorized as a shop administrator.');
+                        }
+                        status.innerText = 'Invitation accepted. Set a password for your administrator account below.';
+                        document.getElementById('admin-password-recovery-form').querySelector('p').innerText = 'Choose a password to finish setting up your administrator account.';
+                    } else {
+                        status.innerText = 'Set a new password for your administrator account below.';
+                        document.getElementById('admin-password-recovery-form').querySelector('p').innerText = 'Choose a new password for your administrator account.';
+                    }
                     switchView('admin');
                     updateAdminAccess();
                 } else if (data.session) {
                     await activateAdminSession(data.session.user);
                 } else if (recoveryLinkOpened) {
+                    passwordRecoveryPending = false;
+                    sessionStorage.removeItem(passwordRecoveryStorageKey);
                     status.innerText = 'This password link is invalid or expired. Request a new password link and open the newest email.';
                     switchView('admin');
+                    updateAdminAccess();
+                } else if (inviteLinkOpened) {
+                    status.innerText = 'This invitation link is invalid or expired. Ask the shop owner to send a new invitation.';
+                    switchView('admin');
+                    updateAdminAccess();
                 }
                 if (!passwordRecoveryPending) {
-                    if (!recoveryLinkOpened || data.session) {
+                    if (!recoveryLinkOpened && !inviteLinkOpened) {
                         status.innerText = 'Sign in with the administrator account to manage shared shop content.';
                     }
                 }
@@ -1219,7 +1245,7 @@
         async function handleAdminPasswordRecovery(event) {
             event.preventDefault();
             if (!supabaseClient || !passwordRecoveryPending) {
-                showToast('Open the password recovery link from your email before setting a new password.', 'error');
+                showToast('Open the invitation or password link from your email before setting a password.', 'error');
                 return;
             }
             const password = document.getElementById('admin-recovery-password').value;
@@ -1243,6 +1269,7 @@
                 sessionStorage.removeItem(passwordRecoveryStorageKey);
                 await supabaseClient.auth.signOut();
                 updateAdminAccess();
+                document.getElementById('admin-password-recovery-form').querySelector('p').innerText = 'Choose a new password for your administrator account.';
                 showToast('Password set. Sign in with your new password.', 'success');
             } catch (error) {
                 console.error('Administrator password recovery failed.', error);
