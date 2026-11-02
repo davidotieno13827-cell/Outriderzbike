@@ -875,7 +875,6 @@
             || sessionStorage.getItem(passwordRecoveryStorageKey) === 'true';
         let passwordResetRequestOpen = false;
         let selectedSaleBikeCategory = null;
-        const saleBikeCarouselIndexes = new Map();
         let saleBikeImageTrigger = null;
         let previousSaleBikeBodyOverflow = '';
         let currentSaleBikePhotos = [];
@@ -1714,7 +1713,7 @@
             const visibleBikes = saleBikes.filter(bike => selectedSaleBikeCategory === null
                 || (String(bike.category || '').trim() || 'Uncategorized').toLocaleLowerCase() === selectedSaleBikeCategory.toLocaleLowerCase());
             grid.innerHTML = '';
-            grid.className = 'grid grid-cols-1 gap-6';
+            grid.className = 'space-y-8';
             emptyMessage.classList.toggle('hidden', saleBikes.length > 0);
             if (saleBikes.length > 0 && visibleBikes.length === 0) {
                 emptyMessage.innerText = `No bikes are listed in ${selectedSaleBikeCategory} right now.`;
@@ -1731,76 +1730,52 @@
                 bikesByCategory.get(categoryKey).bikes.push(bike);
             });
 
-            bikesByCategory.forEach(({ category, bikes: categoryBikes }, categoryKey) => {
-                let currentIndex = saleBikeCarouselIndexes.get(categoryKey) || 0;
-                currentIndex %= categoryBikes.length;
-                saleBikeCarouselIndexes.set(categoryKey, currentIndex);
-
+            bikesByCategory.forEach(({ category, bikes: categoryBikes }) => {
                 const group = document.createElement('section');
-                group.className = 'space-y-4 rounded-2xl border border-zinc-800 bg-white p-4 shadow-sm sm:p-6';
+                group.className = 'space-y-5 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-6';
                 group.setAttribute('aria-label', `${category} category`);
                 group.innerHTML = `
-                    <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 pb-4">
                         <div>
                             <h3 class="text-lg font-black uppercase tracking-wide text-zinc-900">${escapeHTML(category)}</h3>
                             <p class="text-xs font-semibold text-zinc-500">${categoryBikes.length} ${categoryBikes.length === 1 ? 'bike' : 'bikes'} in this group</p>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <span data-bike-position aria-live="polite" class="min-w-12 text-center text-xs font-black text-zinc-600">${currentIndex + 1} / ${categoryBikes.length}</span>
-                            <button type="button" data-sale-bike-previous aria-label="Previous ${escapeHTML(category)}" class="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-300 text-zinc-700 transition-colors hover:border-outriderz-yellow hover:bg-outriderz-yellow focus:outline-none focus:ring-2 focus:ring-outriderz-yellow" ${categoryBikes.length === 1 ? 'disabled' : ''}>
-                                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
-                            </button>
-                            <button type="button" data-sale-bike-next aria-label="Next ${escapeHTML(category)}" class="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-300 text-zinc-700 transition-colors hover:border-outriderz-yellow hover:bg-outriderz-yellow focus:outline-none focus:ring-2 focus:ring-outriderz-yellow" ${categoryBikes.length === 1 ? 'disabled' : ''}>
-                                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-                            </button>
-                        </div>
                     </div>
-                    <div data-category-bike-card class="mx-auto w-full max-w-3xl"></div>
+                    <div data-category-bike-cards class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3"></div>
                 `;
 
-                const renderCurrentBike = () => {
-                    const bike = categoryBikes[currentIndex];
-                    const cardContainer = group.querySelector('[data-category-bike-card]');
+                const cardContainer = group.querySelector('[data-category-bike-cards]');
+                categoryBikes.forEach(bike => {
                     const card = document.createElement('article');
                     const photos = getSaleBikePhotos(bike);
                     const coverPhoto = photos[0] || 'https://placehold.co/600x400/18181b/facc15?text=Bike+Photo';
-                    card.className = 'overflow-hidden rounded-2xl border border-zinc-800 bg-white shadow-lg';
+                    card.className = 'flex h-full flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition-shadow duration-200 hover:shadow-lg';
                     card.innerHTML = `
                         <button type="button" aria-label="View photos and details for ${escapeHTML(bike.name)}" class="sale-bike-image-trigger group relative block w-full overflow-hidden focus:outline-none focus:ring-4 focus:ring-inset focus:ring-outriderz-yellow">
-                            <img src="${escapeHTML(coverPhoto)}" alt="${escapeHTML(bike.name)}" onerror="this.src='https://placehold.co/600x400/18181b/facc15?text=Bike+Photo'" class="h-56 w-full object-cover transition-transform duration-300 group-hover:scale-105 sm:h-80">
+                            <img src="${escapeHTML(coverPhoto)}" alt="${escapeHTML(bike.name)}" onerror="this.src='https://placehold.co/600x400/18181b/facc15?text=Bike+Photo'" class="h-52 w-full object-cover transition-transform duration-300 group-hover:scale-105 sm:h-56">
                             <span class="absolute inset-0 flex items-center justify-center bg-black/0 text-white opacity-0 transition-all group-hover:bg-black/35 group-hover:opacity-100 group-focus-visible:bg-black/35 group-focus-visible:opacity-100">
                                 <span class="rounded-full bg-black/65 px-4 py-2 text-xs font-bold"><i class="fa-solid fa-images mr-2" aria-hidden="true"></i>View photos and details${photos.length > 1 ? ` · ${photos.length} photos` : ''}</span>
                             </span>
                         </button>
-                        <div class="space-y-3 p-5">
+                        <div class="flex flex-1 flex-col items-start space-y-3 p-5">
                             <div class="flex items-start justify-between gap-3">
                                 <h4 class="text-lg font-black uppercase text-zinc-900">${escapeHTML(bike.name)}</h4>
                                 <span class="shrink-0 font-black text-outriderz-red">${Number(bike.price).toLocaleString()} KES</span>
                             </div>
                             <p class="text-xs text-zinc-500">Posted ${escapeHTML(formatDate(bike.postedAt))}</p>
                             <p class="text-sm leading-relaxed text-zinc-600">${escapeHTML(bike.description)}</p>
-                            <button type="button" data-sale-bike-details class="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wide text-zinc-700 hover:text-outriderz-red focus:outline-none focus:ring-2 focus:ring-outriderz-yellow">
+                            <button type="button" data-sale-bike-details class="mt-auto inline-flex items-center gap-2 pt-2 text-xs font-black uppercase tracking-wide text-zinc-700 transition-colors hover:text-outriderz-red focus:outline-none focus:ring-2 focus:ring-outriderz-yellow">
                                 View photos and bike details <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                             </button>
-                            <a href="https://wa.me/254700425515?text=${encodeURIComponent(`Hello, I am interested in the ${bike.name} listed for ${Number(bike.price).toLocaleString()} KES.`)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-black uppercase text-white">
+                            <a href="https://wa.me/254700425515?text=${encodeURIComponent(`Hello, I am interested in the ${bike.name} listed for ${Number(bike.price).toLocaleString()} KES.`)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-black uppercase text-white transition-colors hover:bg-emerald-700">
                                 <i class="fa-brands fa-whatsapp text-base"></i> Enquire on WhatsApp
                             </a>
                         </div>
                     `;
                     card.querySelector('.sale-bike-image-trigger').addEventListener('click', () => openSaleBikeDetails(bike.id));
                     card.querySelector('[data-sale-bike-details]').addEventListener('click', () => openSaleBikeDetails(bike.id));
-                    cardContainer.replaceChildren(card);
-                    group.querySelector('[data-bike-position]').textContent = `${currentIndex + 1} / ${categoryBikes.length}`;
-                };
-
-                const changeBike = direction => {
-                    currentIndex = (currentIndex + direction + categoryBikes.length) % categoryBikes.length;
-                    saleBikeCarouselIndexes.set(categoryKey, currentIndex);
-                    renderCurrentBike();
-                };
-                group.querySelector('[data-sale-bike-previous]').addEventListener('click', () => changeBike(-1));
-                group.querySelector('[data-sale-bike-next]').addEventListener('click', () => changeBike(1));
-                renderCurrentBike();
+                    cardContainer.appendChild(card);
+                });
                 grid.appendChild(group);
             });
         }
